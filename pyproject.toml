@@ -1,0 +1,32 @@
+[tool.black]
+line-length = 79
+
+[tool.isort]
+line_length = 79
+known_local_folder = []
+
+[tool.poetry]
+name = "speech2text"
+version = "0.0.1"
+description = "..."
+authors = ["sentenzo"]
+license = "None"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+openai-whisper = { git = "https://github.com/openai/whisper.git" }
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.12.1"
+pytest = "^7.4.4"
+isort = "^5.13.2"
+flake8 = "^7.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+markers = ["slow: marks test as slow (deselect with '-m \"not slow\"')"]
+filterwarnings = ["ignore::DeprecationWarning:speech_recognition.*:"]
