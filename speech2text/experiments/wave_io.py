@@ -5,6 +5,8 @@ import wave
 from os import PathLike
 from typing import Callable
 
+from scipy.io import wavfile
+
 N_FRAMES = 128
 logger = logging.getLogger(__name__)
 
@@ -32,11 +34,11 @@ class WaveStream:
         new.transformations = self.transformations[:]
         return new
 
-    def set_nchannels(self, nchannels: int) -> WaveStream:
+    def to_mono(self) -> WaveStream:
         new = self.clone()
-        if self.wave_params.nchannels == nchannels:
+        if self.wave_params.nchannels == 1:
             return new
-        new.wave_params = new.wave_params._replace(nchannels=nchannels)
+        new.wave_params = new.wave_params._replace(nchannels=1)
 
         sampwidth = self.wave_params.sampwidth
         frame_size = sampwidth * self.wave_params.nchannels
@@ -55,15 +57,7 @@ class WaveStream:
                 acc_channel = acc_channel.to_bytes(
                     length=sampwidth, signed=True, byteorder="little"
                 )
-                if nchannels > self.wave_params.nchannels:
-                    t_frames.extend(frame)
-                    added_channels_count = (
-                        nchannels - self.wave_params.nchannels
-                    )
-                    t_frames.extend(acc_channel * added_channels_count)
-                elif nchannels < self.wave_params.nchannels:
-                    t_frames.extend(frame[: -2 * sampwidth])
-                    t_frames.extend(acc_channel)
+                t_frames.extend(acc_channel)
 
             return bytes(t_frames)
 
@@ -81,3 +75,4 @@ class WaveStream:
                     for tr in self.transformations:
                         t_frames = tr(t_frames)
                     out_file.writeframes(t_frames)
+                    # out_file.writeframes(frames)
