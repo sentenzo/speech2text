@@ -2,6 +2,8 @@ from multiprocessing import Queue
 
 import pyaudio as pa
 
+import speech2text.config as cfg
+
 from .listener import Listener
 from .pcm_params import PcmParams
 
@@ -53,8 +55,8 @@ def _mic_recorder_proc(
 
 
 class MicrophonListener(Listener):
-    def __init__(self, microphone_id: int = None):
-        super().__init__()
+    def __init__(self, *args, microphone_id: int = None):
+        super().__init__(*args)
         with PyAudioWrapper() as audio:
             if microphone_id is None:
                 microphone_id = audio.get_default_input_device_info()["index"]
@@ -64,6 +66,6 @@ class MicrophonListener(Listener):
 
     def _get_recorder_proc_args(self):
         pcm_params = self.pcm_params
-        chunk_size_sec = self.chunk_size_sec
+        chunk_size_sec = cfg.CHUNK_SIZE_SEC
         microphone_id = self.microphone_id
         return (pcm_params, chunk_size_sec, microphone_id)

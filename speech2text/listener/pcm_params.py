@@ -16,5 +16,17 @@ class PcmParams:
     def sample_count_to_seconds(self, sample_count: int) -> float:
         return sample_count / self.sample_rate
 
+    @property
+    def wav_params(self):
+        # see https://docs.python.org/3/library/wave.html#wave.Wave_read.getparams
+        return (
+            self.channels_count,  # nchannels
+            self.sample_width_bytes,  # sampwidth
+            self.sample_rate,  # framerate
+            0,  # nframes - unknown
+            "NONE",  # comptype
+            "not compressed",  # compname
+        )
+
 
 WHISPER_PRESET = PcmParams(1, 2, 16_000)

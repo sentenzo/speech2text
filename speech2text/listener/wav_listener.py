@@ -2,6 +2,7 @@ from multiprocessing import Queue
 
 from pydub import AudioSegment
 
+import speech2text.config as cfg
 from speech2text.utils import TickSynchronizer
 
 from .listener import Listener
@@ -60,13 +61,13 @@ def _wav_recorder_proc(
 
 
 class WavFileListener(Listener):
-    def __init__(self, path_to_file: str) -> None:
-        super().__init__()
+    def __init__(self, *args, path_to_file: str = None) -> None:
+        super().__init__(*args)
         self.path_to_wave_file = path_to_file
         self._recorder_proc_func = _wav_recorder_proc
 
     def _get_recorder_proc_args(self):
         pcm_params = self.pcm_params
-        chunk_size_sec = self.chunk_size_sec
+        chunk_size_sec = cfg.CHUNK_SIZE_SEC
         path_to_wave_file = self.path_to_wave_file
         return (pcm_params, chunk_size_sec, path_to_wave_file)
