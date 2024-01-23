@@ -1,7 +1,106 @@
+from __future__ import annotations
+
+import logging
 import time
-import wave
+from multiprocessing import Process, Queue
 
 import pyaudio as pa
+from pydub import AudioSegment
+
+import speech2text.config as cfg
+
+logger = logging.getLogger(__name__)
+
+QUEUE_CHECK_DELAY_SEC = 0.05
+DEFAULT_CHUNK_SIZE_SEC = 0.5
+BUFFER_SIZE_MULTI = 10
+SAMPLE_FORMAT = {2: pa.paInt16, 4: pa.paInt32}[cfg.SAMPLE_WIDTH]
+
+
+class Listener:
+    def __init__(self) -> None:
+        self.chunk_size_sec = None
+        self.chunk_size_frames = None
+        self.buffer_size_frames = None
+        self.set_chunk_size_sec(DEFAULT_CHUNK_SIZE_SEC)
+
+    def set_chunk_size_sec(self, chunk_size_sec):
+        self.chunk_size_sec = chunk_size_sec
+        self.chunk_size_frames = int(chunk_size_sec * cfg.SAMPLE_RATE)
+        self.buffer_size_frames = self.chunk_size_frames * BUFFER_SIZE_MULTI
+        return self
+
+    def create_stream_recorder(self):
+        raise NotImplementedError
+
+    def gen_chunks(self):
+        stream_recorder = self.create_stream_recorder()
+        audio_chunks_queue = Queue()
+        stream_recorder_proc = Process(
+            target=stream_recorder,
+            args=(audio_chunks_queue,),
+        )
+        stream_recorder_proc.start()
+        while True:
+            time.sleep(QUEUE_CHECK_DELAY_SEC)
+            if not audio_chunks_queue.empty():
+                yield audio_chunks_queue.get()
+
+
+class MinDuration:
+    def __init__(self, min_durastion_sec: float) -> None:
+        self.min_durastion_sec = min_durastion_sec
+
+    def __enter__(self):
+        self.start_time_mark = time.time()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        duration_passed = time.time() - self.start_time_mark
+        duration_left = max(0, self.min_durastion_sec - duration_passed)
+        time.sleep(duration_left)
+
+
+class WaveFileListener(Listener):
+    def __init__(self, path_to_file: str) -> None:
+        super().__init__()
+        self.path_to_wave_file = path_to_file
+
+    def create_stream_recorder(self):
+        wav_file: AudioSegment = (
+            AudioSegment.from_wav(self.path_to_wave_file)
+            .set_channels(1)  # to mono
+            .set_frame_rate(cfg.SAMPLE_RATE)
+        )
+        samples = wav_file.get_array_of_samples()
+        position = 0
+
+        audio_is_playing = True
+        while audio_is_playing:
+            with MinDuration(self.chunk_size_sec):
+                chunk = samples[position : position + self.chunk_size_frames]
+                position += self.chunk_size_frames
+                if len(chunk) < self.chunk_size_frames:
+                    audio_is_playing = False
+                    added_silence_frames = self.chunk_size_frames - len(chunk)
+                    added_silence_sec = (
+                        added_silence_frames / self.chunk_size_frames
+                    ) * self.chunk_size_sec
+                    added_silence_msec = int(1000 * added_silence_sec)
+                    silence_samples = AudioSegment.silent(
+                        added_silence_msec,
+                        cfg.SAMPLE_RATE,
+                    ).get_array_of_samples()
+                    chunk.extend(silence_samples)
+            yield chunk
+
+        silence_samples = AudioSegment.silent(
+            self.chunk_size_sec * 1000,
+            cfg.SAMPLE_RATE,
+        ).get_array_of_samples()
+        while True:
+            with MinDuration(self.chunk_size_sec):
+                chunk = silence_samples[:]
+            yield chunk
 
 
 class PyAudioWrapper(pa.PyAudio):
@@ -19,57 +118,31 @@ class PyAudioWrapper(pa.PyAudio):
         self.terminate()
 
 
-class Listener:
-    def chunks(self, chunk_duration_sec: float):
-        while True:
-            time.sleep(chunk_duration_sec)
-
-    @staticmethod
-    def get_device_list():
+class MicrophonListener(Listener):
+    def __init__(self, microphone_id: int = None):
+        super().__init__()
         with PyAudioWrapper() as audio:
-            device_list = []
-            for i in range(audio.get_device_count()):
-                device_list.append(audio.get_device_info_by_index(i))
-            return device_list
+            if microphone_id is None:
+                microphone_id = audio.get_default_input_device_info()["index"]
 
+        self.microphone_id = microphone_id
 
-class MicrophoneListener(Listener):
-    def __init__(self, device_id=None) -> None:
-        with PyAudioWrapper() as audio:
-            self.device_info = None
-            if device_id is None:
-                self.device_info = audio.get_default_input_device_info()
-            else:
-                self.device_info = audio.get_device_info_by_index(device_id)
+    def create_stream_recorder(self):
+        def stream_recorder(queue: Queue):
+            with PyAudioWrapper() as audio:
+                stream = audio.open(
+                    input_device_index=self.microphone_id,
+                    format=SAMPLE_FORMAT,
+                    channels=cfg.CHANNELS,
+                    rate=cfg.SAMPLE_RATE,
+                    input=True,
+                    frames_per_buffer=self.buffer_size_frames,
+                )
+                try:
+                    while True:
+                        chunk = stream.read(num_frames=self.chunk_size_frames)
+                        queue.put(chunk)
+                finally:
+                    stream.close()
 
-            self.sample_rate = int(self.device_info["defaultSampleRate"])
-
-    def chunks(self, chunk_duration_sec: float):
-        with PyAudioWrapper() as audio:
-            audio.open()
-
-
-class FileListener(Listener):
-    def __init__(self, audio_file_path) -> None:
-        self.audio_file_path = audio_file_path
-        with wave.open(self.audio_file_path, "rb") as wav_file:
-            self.sample_rate = wav_file.getframerate()
-
-    def chunks(self, chunk_duration_sec: float):
-        with wave.open(self.audio_file_path, "rb") as wav_file:
-            (nchannels, sampwidth, framerate, _, _, _) = wav_file.getparams()
-            chunk_size = int(framerate * nchannels * chunk_duration_sec)
-            while True:
-                chunk = wav_file.readframes(chunk_size)
-                if not chunk:
-                    break
-                if nchannels > 1:
-                    mono_chunk = chunk[::nchannels]
-                    for i in range(chunk_size // nchannels):
-                        for j in range(1, nchannels):
-                            mono_chunk[i] += mono_chunk[i + j]
-                        mono_chunk[i] /= nchannels
-                    chunk = bytes(mono_chunk)
-                yield chunk
-            while True:
-                yield b"\x00" * int(framerate * chunk_duration_sec * sampwidth)
+        return stream_recorder
