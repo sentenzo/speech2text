@@ -1,22 +1,28 @@
 import logging
+import wave
 
-from .experiments.dub import convert as dub_convert
-from .experiments.rosa import convert as rosa_convert
-from .experiments.wave_io import WaveStream
+import speech2text.config as cfg
+
+from .listener import MicrophonListener, WaveFileListener
+
+logger = logging.getLogger(__name__)
 
 logging.basicConfig(
-    level=15,
-    format="%(asctime)s - %(levelname)s \t|\t%(message)s",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(name)s \t|\t%(message)s",
 )
 
+
 if __name__ == "__main__":
-    in_file_path = "tests/audio_samples/en_crows.wav"
+    in_file_path = "tests/audio_samples/en_hedgehog.wav"
     out_file_path = "tests/audio_samples/out.wav"
-    # wave_stream = WaveStream(in_file_path)
-    # wave_stream.to_mono().write_all_to_file(out_file_path)
 
-    # rosa_convert(in_file_path, out_file_path + ".rosa.wav")
-    dub_convert(in_file_path, out_file_path + ".dub.wav")
+    listener = WaveFileListener(in_file_path)
+    # listener = MicrophonListener()
+    with wave.open(out_file_path, "wb") as wav_file:
+        wav_file.setnchannels(cfg.CHANNELS)
+        wav_file.setsampwidth(cfg.SAMPLE_WIDTH)
+        wav_file.setframerate(cfg.SAMPLE_RATE)
 
-    # rosa_convert(in_file_path, out_file_path + ".rosa.wav")
-    # rosa_convert(in_file_path, out_file_path + ".rosa.wav")
+        for chunk in listener.gen_chunks():
+            wav_file.writeframes(chunk)
