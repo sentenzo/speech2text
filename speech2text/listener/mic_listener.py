@@ -3,9 +3,9 @@ from multiprocessing import Queue
 import pyaudio as pa
 
 import speech2text.config as cfg
+from speech2text.pcm_params import PcmParams
 
 from .listener import Listener
-from .pcm_params import PcmParams
 
 SAMPLE_FORMATS = {2: pa.paInt16, 4: pa.paInt32}
 BUFFER_SIZE_MULTI = 10

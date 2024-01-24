@@ -5,8 +5,8 @@ from pydub import AudioSegment
 import speech2text.config as cfg
 from speech2text.utils import TickSynchronizer
 
+from ..pcm_params import PcmParams
 from .listener import Listener
-from .pcm_params import PcmParams
 
 MSEC_IN_SEC = 1000
 

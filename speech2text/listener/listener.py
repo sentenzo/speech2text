@@ -5,8 +5,7 @@ import time
 from multiprocessing import Process, Queue
 
 import speech2text.config as cfg
-
-from .pcm_params import WHISPER_PRESET, PcmParams
+from speech2text.pcm_params import WHISPER_PRESET, PcmParams
 
 logger = logging.getLogger(__name__)
 
