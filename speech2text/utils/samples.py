@@ -66,3 +66,6 @@ class Samples:
             if st != dtype:
                 st_data = CONVERT_FROM_INT32[st](i32_data)
                 TYPE_EXTEND_FUNC[st](self._sample_data[st], st_data)
+
+    def __len__(self):
+        return len(self._sample_data[sdt.NP_I32])
