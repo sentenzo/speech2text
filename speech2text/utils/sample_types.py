@@ -34,16 +34,17 @@ class SampleDType(Enum):
         raise ValueError
 
 
-def _b2_to_i32(data: bytes | bytearray) -> np.int32:
-    return np.frombuffer(data, "<i2").astype(np.int32)  # little endian
-
-
 def _b4_to_i32(data: bytes | bytearray) -> np.int32:
     return np.frombuffer(data, "<i4")
 
 
 def _i16_to_i32(data: np.int16) -> np.int32:
-    return np.array(data).astype(np.int32)
+    return np.array(data).astype(np.int32) << 16
+
+
+def _b2_to_i32(data: bytes | bytearray) -> np.int32:
+    data = np.frombuffer(data, "<i2")  # little endian
+    return _i16_to_i32(data)
 
 
 def _i32_to_i32(data: np.int32 | int) -> np.int32:
@@ -127,7 +128,7 @@ TYPE_FACTORY = {
 }
 
 BYTES_EXTEND = lambda arr, add: arr.extend(add)
-NP_EXTEND = (lambda arr, add: np.append(arr, add),)
+NP_EXTEND = lambda arr, add: np.append(arr, add)
 
 TYPE_EXTEND_FUNC = {
     SampleDType.BYTES_2: BYTES_EXTEND,

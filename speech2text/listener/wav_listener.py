@@ -1,4 +1,5 @@
 from multiprocessing import Queue
+from typing import Generator
 
 from pydub import AudioSegment
 
@@ -16,7 +17,7 @@ def _wav_recorder_proc(
     pcm_params: PcmParams,
     chunk_size_sec: float,
     path_to_wave_file: str,
-) -> None:
+) -> Generator:
     chunk_size_frames = pcm_params.seconds_to_sample_count(chunk_size_sec)
 
     wav_file: AudioSegment = (
@@ -44,6 +45,8 @@ def _wav_recorder_proc(
                         pcm_params.sample_rate,
                     ).get_array_of_samples()
                     chunk.extend(silence_samples)
+                # see https://docs.python.org/3/library/array.html
+                chunk = chunk.tobytes()
                 ticker.tick()
                 queue.put(chunk)
 
@@ -54,6 +57,7 @@ def _wav_recorder_proc(
 
             while True:
                 chunk = silence_samples[:]
+                chunk = chunk.tobytes()
                 ticker.tick()
                 queue.put(chunk)
     except KeyboardInterrupt:

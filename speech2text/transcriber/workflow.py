@@ -8,6 +8,8 @@ from speech2text.transcriber.transcriber import DummyTranscriber, Transcriber
 from speech2text.utils.sample_types import SampleDType as sdt
 from speech2text.utils.samples import Samples
 
+DEFAULT_TRANSCRIBER_CLASS = DummyTranscriber
+
 
 @dataclass
 class TranscriptionBlock:
@@ -21,11 +23,11 @@ class TranscriptionBlock:
 
 
 class WorkflowQueue:
-    def __init__(self, transcriber: Transcriber) -> None:
+    def __init__(self, transcriber: Transcriber = None) -> None:
         self.text_finalized = []
         self.current_block = TranscriptionBlock()
         self.refiner = IdentityRefiner()
-        self.transcriber = transcriber
+        self.transcriber = transcriber or DEFAULT_TRANSCRIBER_CLASS()
 
     def set_refiner(self, refiner: Refiner) -> "WorkflowQueue":
         self.refiner = refiner
@@ -79,3 +81,8 @@ class WorkflowQueue:
         text = self.text_finalized[:]
         self.text_finalized = []
         return text
+
+    def __str__(self) -> str:
+        lines = self.text_finalized[:]
+        lines.append(self.current_block.transcription)
+        return "\n".join(lines)

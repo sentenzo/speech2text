@@ -26,7 +26,7 @@ class Samples:
 
         self._sample_data = {}
         for st in self._main_types:
-            self._sample_data[st] = TYPE_FACTORY[st]()
+            self._sample_data[st] = TYPE_FACTORY[st]([])
         if not init_data:
             return
         if not init_dtype:
