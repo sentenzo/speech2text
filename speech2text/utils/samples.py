@@ -6,7 +6,7 @@ from speech2text.utils.sample_types import (
     CONVERT_FROM_INT32,
     CONVERT_FROM_TO,
     CONVERT_TO_INT32,
-    TYPE_EXTEND_FUNC,
+    TYPE_CONCAT_FUNC,
     TYPE_FACTORY,
 )
 from speech2text.utils.sample_types import SampleDType as Sdt
@@ -60,12 +60,16 @@ class Samples:
             dtype = Sdt.NP_I32
             data = data._sample_data[dtype]
 
-        TYPE_EXTEND_FUNC[dtype](self._sample_data[dtype], data)
+        self._sample_data[dtype] = TYPE_CONCAT_FUNC[dtype](
+            self._sample_data[dtype], data
+        )
         i32_data = CONVERT_TO_INT32[dtype](data)
         for st in self._sample_data:
             if st != dtype:
                 st_data = CONVERT_FROM_INT32[st](i32_data)
-                TYPE_EXTEND_FUNC[st](self._sample_data[st], st_data)
+                self._sample_data[st] = TYPE_CONCAT_FUNC[st](
+                    self._sample_data[st], st_data
+                )
 
     def __len__(self):
         return len(self._sample_data[Sdt.NP_I32])

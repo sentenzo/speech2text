@@ -141,3 +141,40 @@ def test_convert_from_int32_downscale(dtype: Sdt):
     data_expected = TEST_SAMPLE[dtype]
     data_obtained = st.CONVERT_FROM_INT32[dtype](data_from)
     assert_samples_almost_equal(2.0, data_expected, data_obtained)
+
+
+def test_cross_convert_float32():
+    data_expected = TEST_SAMPLE[Sdt.NP_F32]
+    for t_from in TEST_SAMPLE:
+        for t_to in TEST_SAMPLE:
+            if t_to in (Sdt.NP_F32, t_from):
+                continue
+            data = TEST_SAMPLE[t_from][:]
+            data = st.CONVERT_FROM_TO[t_from][t_to](data)
+            data = st.CONVERT_FROM_TO[t_to][Sdt.NP_F32](data)
+            msg = f"{(t_from, t_to)}"
+            assert_samples_almost_equal(0.00005, data_expected, data, msg)
+
+
+def test_type_factory_empty():
+    for dtype in Sdt:
+        empty = st.TYPE_FACTORY[dtype]()
+        assert len(empty) == 0
+
+
+def test_type_factory_non_empty():
+    init_data = [0, 1, 2, 3, 4]
+    for dtype in Sdt:
+        samples = st.TYPE_FACTORY[dtype](init_data)
+        assert len(samples) > 0
+
+
+def test_concat_func():
+    data_a = [0, 1, 2, 3, 4]
+    data_b = [5, 6, 7]
+    for dtype in Sdt:
+        samples_a = st.TYPE_FACTORY[dtype](data_a)
+        samples_b = st.TYPE_FACTORY[dtype](data_b)
+        samples_ab = st.TYPE_FACTORY[dtype](data_a + data_b)
+        samples_a = st.TYPE_CONCAT_FUNC[dtype](samples_a, samples_b)
+        assert all(x == y for x, y in zip(samples_a, samples_ab))
