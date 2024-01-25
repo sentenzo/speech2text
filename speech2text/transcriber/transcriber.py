@@ -1,5 +1,6 @@
-from whisper import transcribe
+import whisper
 
+from speech2text.utils.sample_types import SampleDType as Sdt
 from speech2text.utils.samples import Samples
 
 
@@ -11,9 +12,21 @@ class Transcriber:
         raise NotImplementedError
 
 
-class DummyTranscriber:
+class DummyTranscriber(Transcriber):
     def transcribe(self, samples: Samples) -> str:
         import time
 
         time.sleep(0.1)
         return "(dummy transcriber output) "
+
+
+class WhisperTranscriber(Transcriber):
+    def __init__(self):
+        super().__init__()
+        self.model = whisper.load_model("tiny.en", in_memory=True)
+
+    def transcribe(self, samples: Samples) -> str:
+        tr = whisper.transcribe(
+            self.model, samples.as_type(Sdt.NP_F32), fp16=False
+        )
+        return tr["text"]

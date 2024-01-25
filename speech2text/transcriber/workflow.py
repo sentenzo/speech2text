@@ -1,14 +1,18 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
 
 from speech2text.transcriber.refiner import IdentityRefiner, Refiner
-from speech2text.transcriber.transcriber import DummyTranscriber, Transcriber
+from speech2text.transcriber.transcriber import (
+    DummyTranscriber,
+    Transcriber,
+    WhisperTranscriber,
+)
 from speech2text.utils.sample_types import SampleDType as Sdt
 from speech2text.utils.samples import Samples
 
-DEFAULT_TRANSCRIBER_CLASS = DummyTranscriber
+DEFAULT_TRANSCRIBER_CLASS = WhisperTranscriber  # DummyTranscriber
 
 
 @dataclass
@@ -41,7 +45,7 @@ class WorkflowQueue:
     def _split_silance(samples: Samples) -> list[Samples]:
         ...
         # dummy
-        limit = 15_000
+        limit = 500_000
         if len(samples) > limit:
             data: np.array = samples.as_type(Sdt.NP_I32)
             head = Samples(data[0:limit], Sdt.NP_I32)

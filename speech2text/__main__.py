@@ -7,27 +7,31 @@ from .transcriber import WorkflowQueue
 logger = logging.getLogger(__name__)
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(name)s \t|\t%(message)s",
 )
 
-IN_FILE_PATH = "tests/audio_samples/en_123.wav"
+IN_FILE_PATH = "tests/audio_samples/en_hedgehog.wav"
 OUT_FILE_PATH = "tests/audio_samples/out.wav"
 
 
 if __name__ == "__main__":
-    listener = WavFileListener(path_to_file=IN_FILE_PATH)
+    # listener = WavFileListener(path_to_file=IN_FILE_PATH)
+    listener = MicrophonListener()
     wfq = WorkflowQueue()
     for chunk in listener.get_chunks_iterator():
-        logger.debug(
-            f"A chunk of size {len(chunk)} bytes is received. "
-            f"The 123-th value is: {chunk[123]}"
-        )
-        wfq.push_chunk(chunk)
-        print("\r" + " " * 80 + "\r")
-        for line in wfq.flush_text():
-            print(line)
-        print(str(wfq))
+        try:
+            logger.debug(
+                f"A chunk of size {len(chunk)} bytes is received. "
+                f"The 123-th value is: {chunk[123]}"
+            )
+            wfq.push_chunk(chunk)
+            # print("\r" + " " * 80 + "\r")
+            for line in wfq.flush_text():
+                print(line)
+            print("\r", str(wfq), " " * 10, end="")
+        except KeyboardInterrupt:
+            pass
 
 
 def test_file_listener():

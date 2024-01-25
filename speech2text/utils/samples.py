@@ -27,7 +27,7 @@ class Samples:
         self._sample_data = {}
         for st in self._main_types:
             self._sample_data[st] = TYPE_FACTORY[st]([])
-        if not init_data:
+        if init_data is None or len(init_data) == 0:
             return
         if not init_dtype:
             init_dtype = Sdt.guess(init_data)
