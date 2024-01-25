@@ -9,17 +9,17 @@ from speech2text.utils.sample_types import (
     TYPE_EXTEND_FUNC,
     TYPE_FACTORY,
 )
-from speech2text.utils.sample_types import SampleDType as sdt
+from speech2text.utils.sample_types import SampleDType as Sdt
 
 
 class Samples:
     _main_types = (
-        sdt.BYTES_2,
-        sdt.NP_I32,
-        sdt.NP_F32,
+        Sdt.BYTES_2,
+        Sdt.NP_I32,
+        Sdt.NP_F32,
     )
 
-    def __init__(self, init_data: Any = None, init_dtype: sdt = None) -> None:
+    def __init__(self, init_data: Any = None, init_dtype: Sdt = None) -> None:
         if isinstance(init_data, Samples):
             self._sample_data = init_data._sample_data
             return
@@ -30,12 +30,12 @@ class Samples:
         if not init_data:
             return
         if not init_dtype:
-            init_dtype = sdt.guess(init_data)
+            init_dtype = Sdt.guess(init_data)
         self.update(init_data, init_dtype)
 
-    def as_type(self, dtype: sdt):
+    def as_type(self, dtype: Sdt):
         if dtype not in self._sample_data:
-            i32_data = self._sample_data[sdt.NP_I32]
+            i32_data = self._sample_data[Sdt.NP_I32]
             dt_data = CONVERT_FROM_INT32[dtype](i32_data)
             self._sample_data[dtype] = dt_data
         return self._sample_data[dtype]
@@ -45,7 +45,7 @@ class Samples:
             if st not in self._main_types:
                 del self._sample_data[st]
 
-    def update(self, data: Any, dtype: sdt):
+    def update(self, data: Any, dtype: Sdt):
         self._sample_data[dtype] = data
         i32_data = CONVERT_TO_INT32[dtype](data)
         for st in self._sample_data:
@@ -53,11 +53,11 @@ class Samples:
                 st_data = CONVERT_FROM_INT32[st](i32_data)
                 self._sample_data[st] = st_data
 
-    def extend(self, data: Samples | Any, dtype: sdt = None):
+    def extend(self, data: Samples | Any, dtype: Sdt = None):
         if not dtype:
             if not isinstance(data, Samples):
                 raise ValueError
-            dtype = sdt.NP_I32
+            dtype = Sdt.NP_I32
             data = data._sample_data[dtype]
 
         TYPE_EXTEND_FUNC[dtype](self._sample_data[dtype], data)
@@ -68,4 +68,4 @@ class Samples:
                 TYPE_EXTEND_FUNC[st](self._sample_data[st], st_data)
 
     def __len__(self):
-        return len(self._sample_data[sdt.NP_I32])
+        return len(self._sample_data[Sdt.NP_I32])

@@ -5,7 +5,7 @@ import numpy as np
 
 from speech2text.transcriber.refiner import IdentityRefiner, Refiner
 from speech2text.transcriber.transcriber import DummyTranscriber, Transcriber
-from speech2text.utils.sample_types import SampleDType as sdt
+from speech2text.utils.sample_types import SampleDType as Sdt
 from speech2text.utils.samples import Samples
 
 DEFAULT_TRANSCRIBER_CLASS = DummyTranscriber
@@ -43,9 +43,9 @@ class WorkflowQueue:
         # dummy
         limit = 15_000
         if len(samples) > limit:
-            data: np.array = samples.as_type(sdt.NP_I32)
-            head = Samples(data[0:limit], sdt.NP_I32)
-            tail = Samples(data[limit:], sdt.NP_I32)
+            data: np.array = samples.as_type(Sdt.NP_I32)
+            head = Samples(data[0:limit], Sdt.NP_I32)
+            tail = Samples(data[limit:], Sdt.NP_I32)
             return [head, tail]
         else:
             return []
@@ -58,7 +58,7 @@ class WorkflowQueue:
         t_block.samples_refined = refine(t_block.samples_original)
         t_block.transcription = transcribe(t_block.samples_refined)
 
-    def push_chunk(self, chunk: Samples | Any, dtype: sdt = None):
+    def push_chunk(self, chunk: Samples | Any, dtype: Sdt = None):
         chunk = Samples(chunk, dtype)
         samples_original = self.current_block.samples_original
         samples_original.extend(chunk)
