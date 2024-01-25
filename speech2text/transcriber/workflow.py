@@ -42,7 +42,7 @@ class WorkflowQueue:
         return self
 
     @staticmethod
-    def _split_silance(samples: Samples) -> list[Samples]:
+    def _split_silence(samples: Samples) -> list[Samples]:
         ...
         # dummy
         limit = 500_000
@@ -67,13 +67,13 @@ class WorkflowQueue:
         samples_original = self.current_block.samples_original
         samples_original.extend(chunk)
 
-        split_silance = WorkflowQueue._split_silance(samples_original)
-        if len(split_silance) > 1:
+        split_silence = WorkflowQueue._split_silence(samples_original)
+        if len(split_silence) > 1:
             next_t_block = TranscriptionBlock()
-            for samples in split_silance[1:]:
+            for samples in split_silence[1:]:
                 next_t_block.samples_original.extend(samples)
 
-            self.current_block.samples_original = split_silance[0]
+            self.current_block.samples_original = split_silence[0]
             self._update_t_block(self.current_block)
             self.text_finalized.append(self.current_block.transcription)
 
