@@ -1,3 +1,3 @@
-from .workflow import WorkflowQueue
+from .workflow import Workflow
 
-__all__ = ["WorkflowQueue"]
+__all__ = ["Workflow"]

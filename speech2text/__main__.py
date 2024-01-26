@@ -13,11 +13,11 @@ OUT_FILE_PATH = "tests/audio_samples/out.wav"
 
 def mvp():
     from .listener import MicrophonListener, WavFileListener
-    from .transcriber import WorkflowQueue
+    from .transcriber import Workflow
 
     # listener = WavFileListener(path_to_file=IN_FILE_PATH)
     listener = MicrophonListener()
-    wfq = WorkflowQueue()
+    wfq = Workflow()
     for chunk in listener.get_chunks_iterator():
         try:
             logger.debug(
@@ -68,4 +68,12 @@ def test_mic_listener():
 
 
 if __name__ == "__main__":
-    test_file_listener()
+    # test_file_listener()
+    from .transcriber import Workflow
+    from .transcriber.transformations import Dummy
+
+    t1 = Dummy(0.05)
+    t2 = Dummy(0.05)
+    t3 = Dummy(0.05)
+
+    wf = Workflow(t1 >> t2 >> t3)

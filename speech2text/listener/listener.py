@@ -17,11 +17,11 @@ class Listener:
         self.pcm_params: PcmParams = pcm_params
         self._recorder_proc: Callable | None = None
         self._chunks_iterator: Generator | None = None
-        self._latency: float | None = None
+        self._latency_ratio: float | None = None
 
     @property
-    def latency(self) -> float:
-        return self._latency or 0.0
+    def latency_ratio(self) -> float:
+        return self._latency_ratio or 0.0
 
     def _get_recorder_proc_kwargs(self):
         raise NotImplementedError
@@ -34,7 +34,7 @@ class Listener:
     def close_chunks_iterator(self):
         if self._chunks_iterator:
             self._chunks_iterator.close()
-            self._latency = None
+            self._latency_ratio = None
 
     def relaunch_chunks_iterator(self, *args, **kwargs):
         self.close_chunks_iterator()
@@ -62,7 +62,7 @@ class Listener:
                     if not audio_chunks_queue.empty():
                         yield audio_chunks_queue.get()
                         ticker.tick(wait=False)
-                        self._latency = ticker.latency
+                        self._latency_ratio = ticker.latency / chunk_size_sec
                     else:
                         time.sleep(cfg.QUEUE_CHECK_DELAY_SEC)
         except (KeyboardInterrupt, GeneratorExit):
