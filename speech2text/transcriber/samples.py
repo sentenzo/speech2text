@@ -1,10 +1,13 @@
 from enum import Enum, auto
-from speech2text.pcm_params import PcmParams, WHISPER_PRESET
+
 import numpy as np
 import numpy.typing as np_typing
 from pydub import AudioSegment
 
+from speech2text.pcm_params import WHISPER_PRESET, PcmParams
+
 POW_2_15 = 1 << 15
+MSEC_IN_SEC = 1000
 
 
 class SamplesFormat(Enum):
@@ -83,3 +86,20 @@ class Samples:
 
     def _as_np_float32(self) -> np_typing.NDArray[np.float32]:
         return self._as_np_float32().data
+
+    def len_sec(self):
+        if self.sample_format == SamplesFormat.BINARY:
+            return (
+                len(self.data)
+                / self.pcm_params.channels_count
+                / self.pcm_params.sample_width_bytes
+                / self.pcm_params.sample_rate
+            )
+        elif self.sample_format == SamplesFormat.PD_A_SEGMENT:
+            return len(self.data) / MSEC_IN_SEC
+        elif self.sample_format == SamplesFormat.NP_FLOAT32:
+            return (
+                len(self.data)
+                / self.pcm_params.channels_count
+                / self.pcm_params.sample_rate
+            )

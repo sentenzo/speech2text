@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 
-from .samples import Samples, SamplesFormat
+from speech2text.pcm_params import WHISPER_PRESET, PcmParams
 
-from speech2text.pcm_params import PcmParams, WHISPER_PRESET
+from .samples import Samples, SamplesFormat
 
 
 @dataclass

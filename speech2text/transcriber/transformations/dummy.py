@@ -1,9 +1,7 @@
 import time
 
-from speech2text.transcriber.state import (
-    TranscriptionState as State,
-    # TranscriptionStateTransformation as Transformation,
-)
+from speech2text.transcriber.state import TranscriptionState as State
+
 from ..transformations import Transformation
 
 
