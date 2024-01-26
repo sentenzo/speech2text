@@ -3,6 +3,7 @@ from speech2text.transcriber.state import (
 )
 
 from .dummy import Dummy
+from .nr_refine import NoiseReduce
 from .pydub_refine import (
     PbIfLatency_ForceSplit,
     PdIfLatency_SpeedUp,
@@ -15,6 +16,7 @@ DEFAULT_PIPELINE = (
     >> PdSplitSilence()
     >> PbIfLatency_ForceSplit()
     >> PdIfLatency_SpeedUp()
+    >> NoiseReduce()
 )
 
 __all__ = ["Dummy", "Transformation", "DEFAULT_PIPELINE"]

@@ -84,7 +84,7 @@ class Samples:
         if self.sample_format == SamplesFormat.NP_FLOAT32:
             return self
 
-    def _as_np_float32(self) -> np_typing.NDArray[np.float32]:
+    def as_np_float32(self) -> np_typing.NDArray[np.float32]:
         return self._as_np_float32().data
 
     def len_sec(self):
