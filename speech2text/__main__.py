@@ -1,8 +1,4 @@
 import logging
-import wave
-
-from .listener import MicrophonListener, WavFileListener
-from .transcriber import WorkflowQueue
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +11,10 @@ IN_FILE_PATH = "tests/audio_samples/en_hedgehog.wav"
 OUT_FILE_PATH = "tests/audio_samples/out.wav"
 
 
-if __name__ == "__main__":
+def mvp():
+    from .listener import MicrophonListener, WavFileListener
+    from .transcriber import WorkflowQueue
+
     # listener = WavFileListener(path_to_file=IN_FILE_PATH)
     listener = MicrophonListener()
     wfq = WorkflowQueue()
@@ -35,6 +34,10 @@ if __name__ == "__main__":
 
 
 def test_file_listener():
+    import wave
+
+    from .listener import WavFileListener
+
     listener = WavFileListener(path_to_file=IN_FILE_PATH)
     with wave.open(OUT_FILE_PATH, "wb") as wav_file:
         wav_file.setparams(listener.pcm_params.wav_params)
@@ -48,6 +51,10 @@ def test_file_listener():
 
 
 def test_mic_listener():
+    import wave
+
+    from .listener import MicrophonListener
+
     listener = MicrophonListener()
     with wave.open(OUT_FILE_PATH, "wb") as wav_file:
         wav_file.setparams(listener.pcm_params.wav_params)
@@ -58,3 +65,7 @@ def test_mic_listener():
                 f"The 123-th value is: {chunk[123]}"
             )
             wav_file.writeframes(chunk)
+
+
+if __name__ == "__main__":
+    test_file_listener()
