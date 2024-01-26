@@ -28,8 +28,9 @@ class PyAudioWrapper(pa.PyAudio):
 
 def _mic_recorder_proc(
     queue: Queue,
-    pcm_params: PcmParams,
     chunk_size_sec: float,
+    pcm_params: PcmParams,
+    *,
     microphone_id: str,
 ) -> None:
     chunk_size_frames = pcm_params.seconds_to_sample_count(chunk_size_sec)
@@ -64,8 +65,7 @@ class MicrophonListener(Listener):
         self.microphone_id = microphone_id
         self._recorder_proc_func = _mic_recorder_proc
 
-    def _get_recorder_proc_args(self):
-        pcm_params = self.pcm_params
-        chunk_size_sec = cfg.CHUNK_SIZE_SEC
-        microphone_id = self.microphone_id
-        return (pcm_params, chunk_size_sec, microphone_id)
+    def _get_recorder_proc_kwargs(self):
+        return {
+            "microphone_id": self.microphone_id,
+        }

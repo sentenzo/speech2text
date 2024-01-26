@@ -14,8 +14,9 @@ MSEC_IN_SEC = 1000
 
 def _wav_recorder_proc(
     queue: Queue,
-    pcm_params: PcmParams,
     chunk_size_sec: float,
+    pcm_params: PcmParams,
+    *,
     path_to_wave_file: str,
 ) -> Generator:
     chunk_size_frames = pcm_params.seconds_to_sample_count(chunk_size_sec)
@@ -70,8 +71,7 @@ class WavFileListener(Listener):
         self.path_to_wave_file = path_to_file
         self._recorder_proc_func = _wav_recorder_proc
 
-    def _get_recorder_proc_args(self):
-        pcm_params = self.pcm_params
-        chunk_size_sec = cfg.CHUNK_SIZE_SEC
-        path_to_wave_file = self.path_to_wave_file
-        return (pcm_params, chunk_size_sec, path_to_wave_file)
+    def _get_recorder_proc_kwargs(self):
+        return {
+            "path_to_wave_file": self.path_to_wave_file,
+        }

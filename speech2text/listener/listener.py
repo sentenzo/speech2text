@@ -15,15 +15,22 @@ class Listener:
         self.pcm_params: PcmParams = pcm_params
         self._recorder_proc = None
 
-    def _get_recorder_proc_args(self):
+    def _get_recorder_proc_kwargs(self):
         raise NotImplementedError
 
-    def get_chunks_iterator(self):
+    def get_chunks_iterator(self, chunk_size_sec: float = None):
         audio_chunks_queue = Queue()
-        args = (audio_chunks_queue, *self._get_recorder_proc_args())
+        chunk_size_sec = chunk_size_sec or cfg.CHUNK_SIZE_SEC
+        args = (
+            audio_chunks_queue,
+            chunk_size_sec,
+            self.pcm_params,
+        )
+        kwargs = self._get_recorder_proc_kwargs()
         stream_recorder_proc = Process(
             target=self._recorder_proc_func,
             args=args,
+            kwargs=kwargs,
         )
         stream_recorder_proc.start()
         logger.info("Start recording")
