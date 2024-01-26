@@ -1,3 +1,3 @@
-from .tick import TickSynchronizer
+from .tick import Ticker
 
-__all__ = ["TickSynchronizer"]
+__all__ = ["Ticker"]

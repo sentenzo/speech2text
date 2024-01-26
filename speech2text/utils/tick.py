@@ -1,13 +1,13 @@
 import time
 
 
-class TickSynchronizer:
+class Ticker:
     """A context manager, which helps aligning a series of events to
     a time grid.
 
     Example:
     ```python
-    with TickSynchronizer(0.8) as ticker:
+    with Ticker(0.8) as ticker:
         while True:
             time.sleep(random.random())  # wait for [0.0,1.0] sec
             ticker.tick()
@@ -21,6 +21,12 @@ class TickSynchronizer:
         self.tick_duration_sec = tick_duration_sec
         self.next_tick = None
 
+    @property
+    def latency(self):
+        current_time = time.time()
+        next_tick = self.next_tick | current_time
+        return max(0.0, current_time - next_tick)
+
     def __enter__(self):
         self.next_tick = time.time()
         return self
@@ -28,10 +34,10 @@ class TickSynchronizer:
     def __exit__(self, exc_type, exc_value, traceback):
         self.next_tick = None
 
-    def tick(self):
+    def tick(self, wait=True):
         self.next_tick += self.tick_duration_sec
         current_time = time.time()
-        if self.next_tick > current_time:
+        if wait and self.next_tick > current_time:
             time.sleep(self.next_tick - current_time)
 
 
@@ -50,7 +56,7 @@ if __name__ == "__main__":
     ticks_count = 0
     iteration_avg_duration = 0
     try:
-        with TickSynchronizer(tick_durastion_sec) as ticker:
+        with Ticker(tick_durastion_sec) as ticker:
             cycle_start = time.time()
             while True:
                 iteration_start = time.time()

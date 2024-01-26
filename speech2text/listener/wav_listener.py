@@ -4,7 +4,7 @@ from typing import Generator
 from pydub import AudioSegment
 
 import speech2text.config as cfg
-from speech2text.utils import TickSynchronizer
+from speech2text.utils import Ticker
 
 from ..pcm_params import PcmParams
 from .listener import Listener
@@ -30,7 +30,7 @@ def _wav_recorder_proc(
     position = 0
     audio_is_playing = True
     try:
-        with TickSynchronizer(chunk_size_sec) as ticker:
+        with Ticker(chunk_size_sec) as ticker:
             while audio_is_playing:
                 chunk = samples[position : position + chunk_size_frames]
                 position += chunk_size_frames
