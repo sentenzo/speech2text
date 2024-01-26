@@ -27,6 +27,9 @@ class WhisperTranscriber(Transcriber):
 
     def transcribe(self, samples: Samples) -> str:
         tr = whisper.transcribe(
-            self.model, samples.as_type(Sdt.NP_F32), fp16=False
+            self.model,
+            samples.as_type(Sdt.NP_F32),
+            fp16=False,
+            condition_on_previous_text=False,
         )
         return tr["text"]

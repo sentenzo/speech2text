@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 
-from speech2text.utils.sample_types import SampleDType as Sdt
+from .samples import Samples, SamplesFormat
+
+from speech2text.pcm_params import PcmParams, WHISPER_PRESET
 
 
 @dataclass
@@ -8,15 +10,12 @@ class TranscriptionBlock:
     init_prompt: str | None = None
     text: str | None = None
     init_data_b2: bytearray = field(default_factory=bytearray)
-    data: bytearray = field(default_factory=bytearray)
-    data_type: Sdt = Sdt.BYTES_2
-
-    def __post_init__(self):
-        self.data = bytearray(self.init_data_b2)
+    data: Samples | None = None
 
 
 @dataclass
 class TranscriptionState:
+    pcm_params: PcmParams = WHISPER_PRESET
     blocks: list[TranscriptionBlock] | None = None
     processing: bool = False
     latency_ratio: float = 0.0
@@ -33,8 +32,10 @@ class TranscriptionState:
         block = self.blocks[0]
         block.text = None
         block.init_data_b2.extend(chunk)
-        block.data = bytearray(block.init_data_b2)
-        block.data_type = Sdt.BYTES_2
+
+        block.data = Samples(
+            block.init_data_b2, SamplesFormat.BINARY, self.pcm_params
+        )
         self.latency_ratio = latency_ratio
 
     def __irshift__(self, trans: "TranscriptionStateTransformation"):
