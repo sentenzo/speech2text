@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-import speech2text.utils.sample_types as st
-from speech2text.utils.sample_types import SampleDType as Sdt
+import speech2text.experiments.sample_types as st
+from speech2text.experiments.sample_types import SampleDType as Sdt
 
 
 @pytest.mark.parametrize(

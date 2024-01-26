@@ -15,7 +15,7 @@ class TranscriptionBlock:
 
 @dataclass
 class TranscriptionState:
-    pcm_params: PcmParams = WHISPER_PRESET
+    pcm_params: PcmParams = field(default_factory=lambda: WHISPER_PRESET)
     blocks: list[TranscriptionBlock] | None = None
     processing: bool = False
     latency_ratio: float = 0.0
