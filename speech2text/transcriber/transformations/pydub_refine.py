@@ -43,10 +43,14 @@ class PdSplitSilence(Transformation):
         audio: AudioSegment = block.samples.as_pd_a_segment()
         segments = silence.split_on_silence(
             audio,
-            min_silence_len=self.min_silence_len,
-            silence_thresh=self.silence_thresh,
-            keep_silence=100,
-            seek_step=50,  # default was 1 ms
+            # min_silence_len=self.min_silence_len,
+            # silence_thresh=self.silence_thresh,
+            # keep_silence=100,
+            # seek_step=1,  # default was 1 ms
+            min_silence_len=500,
+            silence_thresh=-30,
+            keep_silence=300,
+            seek_step=10,  # default was 1 ms
         )
         if len(segments) > 1:
             for segment in segments:

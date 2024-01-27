@@ -1,5 +1,7 @@
 import logging
 
+from speech2text.experiments.dub import split as pydub_split
+
 logger = logging.getLogger(__name__)
 
 logging.basicConfig(
@@ -7,7 +9,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s \t|\t%(message)s",
 )
 
-IN_FILE_PATH = "tests/audio_samples/en_news.wav"
+IN_FILE_PATH = "tests/audio_samples/en_hedgehog.wav"
 OUT_FILE_PATH = "tests/audio_samples/out.wav"
 
 
@@ -69,3 +71,4 @@ def test_mic_listener():
 
 if __name__ == "__main__":
     mvp()
+    # pydub_split(IN_FILE_PATH, OUT_FILE_PATH)

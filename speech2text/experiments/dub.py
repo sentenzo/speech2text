@@ -3,7 +3,7 @@ import wave
 
 import noisereduce as nr
 import numpy as np
-from pydub import AudioSegment
+from pydub import AudioSegment, effects, silence
 
 BITS_IN_BYTE = 8
 SAMPLE_RATE = 16_000
@@ -31,3 +31,22 @@ def convert(in_path, out_path):
         format="wav",
     )
     logger.log(15, "stop converting")
+
+
+def split(in_path, out_path):
+    audio: AudioSegment = AudioSegment.from_wav(in_path)
+    audio = effects.normalize(audio)
+    # audio += 0
+
+    segments = silence.split_on_silence(
+        audio,
+        min_silence_len=500,
+        silence_thresh=-30,
+        keep_silence=300,
+        seek_step=10,  # default was 1 ms
+    )
+    for i, segment in enumerate(segments):
+        segment.export(
+            out_path + f"{i}.wav",
+            format="wav",
+        )
