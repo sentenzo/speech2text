@@ -10,7 +10,7 @@ class TranscriptionBlock:
     init_prompt: str | None = None
     text: str | None = None
     init_data_b2: bytearray = field(default_factory=bytearray)
-    data: Samples | None = None
+    samples: Samples | None = None
 
 
 @dataclass
@@ -33,14 +33,14 @@ class TranscriptionState:
         block.text = None
         block.init_data_b2.extend(chunk)
 
-        block.data = Samples(
+        block.samples = Samples(
             block.init_data_b2, SamplesFormat.BINARY, self.pcm_params
         )
         self.latency_ratio = latency_ratio
 
     def __irshift__(self, trans: "TranscriptionStateTransformation"):
-        assert not self.processing
         trans.change_state(self)
+        return self
 
 
 class TranscriptionStateTransformation:

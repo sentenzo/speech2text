@@ -24,7 +24,7 @@ class Ticker:
     @property
     def latency(self):
         current_time = time.time()
-        next_tick = self.next_tick | current_time
+        next_tick = self.next_tick or current_time
         return max(0.0, current_time - next_tick)
 
     def __enter__(self):

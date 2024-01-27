@@ -69,5 +69,7 @@ class Listener:
             pass
         finally:
             self._chunks_iterator = None
+            stream_recorder_proc.terminate()
+            stream_recorder_proc.join(5.0)
             stream_recorder_proc.close()
             logger.info("Stop recording")

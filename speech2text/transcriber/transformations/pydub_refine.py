@@ -19,12 +19,11 @@ class PdNormalize(Transformation):
 
     def change_state(self, state: State):
         for block in state.blocks:
-            audio: AudioSegment = block.data.as_pd_a_segment()
+            audio: AudioSegment = block.samples.as_pd_a_segment()
             audio = effects.normalize(audio)
             if self.amplify != 1.0:
                 audio += self.amplify
-            samples = audio.get_array_of_samples()
-            block.data = samples
+            block.samples.data = audio
 
 
 class PdSplitSilence(Transformation):
@@ -39,9 +38,9 @@ class PdSplitSilence(Transformation):
     def change_state(self, state: State):
         assert len(state.blocks) >= 1
         for block in state.blocks:
-            block.data.as_pd_a_segment()
+            block.samples.as_pd_a_segment()
         block = state.blocks.pop()
-        audio: AudioSegment = block.data.as_pd_a_segment()
+        audio: AudioSegment = block.samples.as_pd_a_segment()
         segments = silence.split_on_silence(
             audio,
             min_silence_len=self.min_silence_len,
@@ -50,7 +49,17 @@ class PdSplitSilence(Transformation):
             seek_step=50,  # default was 1 ms
         )
         if len(segments) > 1:
-            state.blocks.extend(segments)
+            for segment in segments:
+                state.blocks.append(
+                    Block(
+                        samples=Samples(
+                            data=segment,
+                            pcm_params=state.pcm_params,
+                            sample_format=SamplesFormat.PD_A_SEGMENT,
+                        ),
+                    )
+                )
+            # state.blocks[-1].init_data_b2 = block.init_data_b2
             state.latency_ratio = 0.0  # we assume that's enough to speed
         else:
             state.blocks.append(block)
@@ -68,24 +77,24 @@ class PbIfLatency_ForceSplit(Transformation):
     def change_state(self, state: State):
         assert len(state.blocks) >= 1
         block = state.blocks[-1]
-        if block.data.len_sec() < self.sec_threshold:
+        if block.samples.len_sec() < self.sec_threshold:
             return
         if state.latency_ratio < self.ratio_threshold:
             return
         for block in state.blocks:
-            block.data.as_pd_a_segment()
+            block.samples.as_pd_a_segment()
         block = state.blocks.pop()
-        audio: AudioSegment = block.data.as_pd_a_segment()
+        audio: AudioSegment = block.samples.as_pd_a_segment()
 
         msec_padding = int(self.sec_threshold * 1000 - 1)
         pre_block = Block(
-            data=Samples(
+            samples=Samples(
                 audio[:-msec_padding],
                 pcm_params=state.pcm_params,
                 sample_format=SamplesFormat.PD_A_SEGMENT,
             )
         )
-        block.data = Samples(audio[-msec_padding:])
+        block.samples.data = audio[-msec_padding:]
 
         state.blocks.append(pre_block)
         state.blocks.append(block)
@@ -104,15 +113,26 @@ class PdIfLatency_SpeedUp(Transformation):
     def change_state(self, state: State):
         assert len(state.blocks) >= 1
         block = state.blocks[-1]
-        if block.data.len_sec() < self.sec_threshold:
+        if block.samples.len_sec() < self.sec_threshold:
             return
         if state.latency_ratio < self.ratio_threshold:
             return
         for block in state.blocks:
-            block.data.as_pd_a_segment()
+            block.samples.as_pd_a_segment()
         block = state.blocks.pop()
-        audio: AudioSegment = block.data.as_pd_a_segment()
+        audio: AudioSegment = block.samples.as_pd_a_segment()
         audio = effects.speedup(audio, SPEEDUP_RATIO)
-        block.data = audio
+        block.samples.data = audio
         state.blocks.append(block)
         state.latency_ratio = 0.0
+
+
+class PdSaveWav(Transformation):
+    def __init__(self, path: str) -> None:
+        self.path = path
+
+    def change_state(self, state: State):
+        audio = AudioSegment.empty()
+        for block in state.blocks:
+            audio = audio + block.samples.as_pd_a_segment()
+        audio.export(self.path, format="wav")

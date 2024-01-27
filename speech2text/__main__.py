@@ -7,7 +7,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s \t|\t%(message)s",
 )
 
-IN_FILE_PATH = "tests/audio_samples/en_hedgehog.wav"
+IN_FILE_PATH = "tests/audio_samples/en_news.wav"
 OUT_FILE_PATH = "tests/audio_samples/out.wav"
 
 
@@ -15,22 +15,22 @@ def mvp():
     from .listener import MicrophonListener, WavFileListener
     from .transcriber import Workflow
 
-    # listener = WavFileListener(path_to_file=IN_FILE_PATH)
-    listener = MicrophonListener()
+    listener = WavFileListener(path_to_file=IN_FILE_PATH)
+    # listener = MicrophonListener()
     wfq = Workflow()
-    for chunk in listener.get_chunks_iterator():
-        try:
+    try:
+        for chunk in listener.get_chunks_iterator():
             logger.debug(
                 f"A chunk of size {len(chunk)} bytes is received. "
                 f"The 123-th value is: {chunk[123]}"
             )
             wfq.push_chunk(chunk)
             # print("\r" + " " * 80 + "\r")
-            for line in wfq.flush_text():
+            for line in wfq.flush_finalized_text():
                 print(line)
-            print("\r", str(wfq), " " * 10, end="")
-        except KeyboardInterrupt:
-            pass
+            print("\r", wfq.get_transcription(), " " * 10, end="")
+    except KeyboardInterrupt:
+        pass
 
 
 def test_file_listener():
@@ -68,12 +68,4 @@ def test_mic_listener():
 
 
 if __name__ == "__main__":
-    # test_file_listener()
-    from .transcriber import Workflow
-    from .transcriber.transformations import Dummy
-
-    t1 = Dummy(0.05)
-    t2 = Dummy(0.05)
-    t3 = Dummy(0.05)
-
-    wf = Workflow(t1 >> t2 >> t3)
+    mvp()

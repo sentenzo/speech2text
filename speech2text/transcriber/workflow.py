@@ -1,11 +1,10 @@
 from .state import TranscriptionState as State
 from .state import TranscriptionStateTransformation as StateTransform
-
-# from .transform import
+from .transformations import DEFAULT_PIPELINE
 
 
 class Workflow:
-    def __init__(self, pipeline: StateTransform) -> None:
+    def __init__(self, pipeline: StateTransform = DEFAULT_PIPELINE) -> None:
         self.state = State()
         self.pipeline = pipeline
 
@@ -23,6 +22,7 @@ class Workflow:
         return lines
 
     def get_transcription(self):
-        lines = self.state.text_finalized
-        lines.append(self.state.blocks[-1].text)
+        lines = self.state.text_finalized[:]
+        if self.state.blocks[-1].text:
+            lines.append(self.state.blocks[-1].text)
         return "\n".join(lines)
