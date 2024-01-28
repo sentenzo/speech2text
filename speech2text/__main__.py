@@ -1,7 +1,5 @@
 import logging
 
-from speech2text.experiments.dub import split as pydub_split
-
 logger = logging.getLogger(__name__)
 
 logging.basicConfig(
