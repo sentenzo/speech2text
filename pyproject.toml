@@ -26,6 +26,7 @@ black = "^23.12.1"
 pytest = "^7.4.4"
 isort = "^5.13.2"
 flake8 = "^7.0.0"
+jupyter = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core"]
