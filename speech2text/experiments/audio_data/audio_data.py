@@ -34,6 +34,8 @@ class IAudioData:
     def _load_from_wav_file(
         wav_file: str | bytes | PathLike,
     ) -> Tuple[PcmParams, bytearray]:
+        if isinstance(wav_file, PathLike):
+            wav_file = str(wav_file)
         with wave.open(wav_file, "rb") as file:
             pcm_params = PcmParams(
                 file.getnchannels(),
