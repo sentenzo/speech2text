@@ -3,7 +3,8 @@ from os import PathLike
 
 from pydub import AudioSegment, effects, silence
 
-from . import WHISPER_PCM_PARAMS, IAudioData, PcmParams, WavData
+from .audio_data import WHISPER_PCM_PARAMS, IAudioData, PcmParams
+from .wav import WavData
 
 
 class PdData(AudioSegment, IAudioData):
@@ -21,6 +22,9 @@ class PdData(AudioSegment, IAudioData):
         in_memory_wav_file.seek(0)
         return in_memory_wav_file
 
+    def create_wav_data(self) -> WavData:
+        return WavData(self.pcm_params, bytearray(self.raw_data))
+
     @property
     def pcm_params(self) -> PcmParams:
         return PcmParams(
@@ -32,13 +36,15 @@ class PdData(AudioSegment, IAudioData):
     def adjust_pcm_params(
         self, new_pcm_params: PcmParams = WHISPER_PCM_PARAMS
     ) -> "PdData":
-        new_audio: PdData = effects.normalize(self)
         new_audio = (
-            new_audio.set_channels(new_pcm_params.channels_count)
+            self.set_channels(new_pcm_params.channels_count)
             .set_frame_rate(new_pcm_params.sample_rate)
             .set_sample_width(new_pcm_params.sample_width_bytes)
         )
         return new_audio
+
+    def normalize(self, headroom: float = 0.1) -> "PdData":
+        return effects.normalize(self, headroom)
 
     def high_pass_filter(self, cutoff: float) -> "PdData":
         return effects.high_pass_filter(self, cutoff)
@@ -53,6 +59,8 @@ class PdData(AudioSegment, IAudioData):
         crossfade: int = 25,
     ) -> "PdData":
         assert playback_speed >= 1.0
+        if playback_speed == 1.0:
+            return self
         return effects.speedup(self, playback_speed, chunk_size, crossfade)
 
     def split_on_silence(

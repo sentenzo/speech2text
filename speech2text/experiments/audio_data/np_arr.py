@@ -1,19 +1,31 @@
 from dataclasses import dataclass
+from functools import lru_cache
 from io import BytesIO
 from os import PathLike
 from typing import Any
 
+import noisereduce  # can take quite some time
 import numpy as np
 import numpy.typing as np_typing
-import whisper
+import torch  # can take quite some time
+import whisper  # can take quite some time
 
-from . import IAudioData, PcmParams, PdData, WavData
+from .audio_data import IAudioData, PcmParams
+from .pd import PdData
+from .wav import WavData
 
-NP_DTYPE = "f4"
-DEFAULT_WHISPER_MODEL = "small.en"
+NP_DTYPE = "f2" if torch.cuda.is_available() else "f4"
+DEFAULT_WHISPER_MODEL_NAME = (
+    "small.en" if torch.cuda.is_available() else "tiny.en"
+)
 
-# Global heavy resources
-_GHR = {}
+
+@lru_cache(3)
+def _pick_whisper_model(model_name: str = DEFAULT_WHISPER_MODEL_NAME):
+    return whisper.load_model(model_name, in_memory=True)
+
+
+_pick_whisper_model()  # cold start overcoming
 
 
 @dataclass
@@ -35,7 +47,7 @@ class NpData(IAudioData):
         dtype = f"<i{pcm_params.sample_width_bytes}"
         np_array: np_typing.NDArray = np.frombuffer(data, dtype)
         max_val = 2 ** (pcm_params.sample_width_bytes * 8 - 1)
-        np_array = np_array.astype("f4") / max_val
+        np_array = np_array.astype(NP_DTYPE) / max_val
 
         return NpData(pcm_params, np_array)
 
@@ -61,34 +73,7 @@ class NpData(IAudioData):
         data = np_array.astype(f"<i{sample_width_bytes}").tobytes()
         return data
 
-    @staticmethod
-    def pick_noisereduce_module():
-        key = "noisereduce_module"
-        if not key in _GHR:
-            """Can sometimes take up to 2 min"""
-            import noisereduce
-
-            _GHR[key] = noisereduce
-        return _GHR[key]
-
-    @staticmethod
-    def pick_whisper_model(model_name: str = None) -> Any:
-        key_prefix = "whisper"
-        key_last_used = f"{key_prefix}_last_used"
-        if not model_name:
-            if not key_last_used in _GHR:
-                _GHR[key_last_used] = whisper.load_model(
-                    DEFAULT_WHISPER_MODEL, in_memory=True
-                )
-            return _GHR[key_last_used]
-        key = f"{key_prefix}_{model_name}"
-        if not key in _GHR:
-            _GHR[key] = whisper.load_model(model_name, in_memory=True)
-        _GHR[key_last_used] = _GHR[key]
-        return _GHR[key]
-
     def reduce_noise(self):
-        noisereduce = NpData.pick_noisereduce_module()
         new_data = noisereduce.reduce_noise(
             self._data,
             self.pcm_params.sample_rate,
@@ -109,15 +94,15 @@ class NpData(IAudioData):
             hop_length=None,  # =None,
             clip_noise_stationary=True,  # =True,
             use_tqdm=False,  # =False,
-            n_jobs=-1,  # =1,
-            use_torch=False,  # =False,
+            # n_jobs=-1,  # =1,
+            use_torch=True,  # =False,
             device="cuda",  # ="cuda",
         )
         return NpData(self.pcm_params, new_data)
 
     def transcribe(
         self,
-        model_name: str = None,
+        model_name: str = DEFAULT_WHISPER_MODEL_NAME,
         verbose=False,
         temperature=(0, 0.2, 0.4, 0.6, 0.8, 1),
         compression_ratio_threshold=2.4,
@@ -128,9 +113,7 @@ class NpData(IAudioData):
         clip_timestamps="0",  # ??
         hallucination_silence_threshold=None,
     ) -> dict[str, str | list]:
-        whisper_model: whisper.Whisper = NpData.pick_whisper_model(model_name)
-
-        return whisper_model.transcribe(
+        return _pick_whisper_model(model_name).transcribe(
             self._data,
             verbose=verbose,
             temperature=temperature,
