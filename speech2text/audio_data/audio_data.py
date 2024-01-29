@@ -47,7 +47,7 @@ class IAudioData:
         plt.figure(figsize=figsize, dpi=dpi)
         plt.specgram(
             data,
-            Fs=self.pcm_params.sample_rate,
+            Fs=self.pcm_params.frame_rate,
             NFFT=1024,
             cmap="magma",
         )

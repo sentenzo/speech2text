@@ -1,27 +1,38 @@
 """
-PCM stands for Pulse-code modulation.
+PCM stands for Pulse-code modulation (in WAVE files)
+
+Terminology:
+channels count -- the amount of speakers required to play the audio file,
+                  usually equals to 1 (mono) or 2 (sterio)
+        sample -- a sequence of bytes, which encodes a single amplitude value
+         frame -- a sequence of bytes, which encodes samples for each channel
+                  at some point in time
+  sample width -- the size of one sample in bytes, usually equals to 2 or 4
+    frame rate -- the amount of frames in a second, can technically be `float`,
+                  but the Python's `wave` module stores it as `int`
 """
+
 from dataclasses import dataclass
 from wave import Wave_read, Wave_write
 
 
-@dataclass(
-    frozen=True,
-    slots=True,
-)
+@dataclass(frozen=True, slots=True)
 class PcmParams:
     channels_count: int  # nchannels
     sample_width_bytes: int  # sampwidth
-    sample_rate: float  # framerate
+    frame_rate: int  # framerate
 
-    def sample_size_bytes(self) -> int:
+    def frame_size_bytes(self) -> int:
         return self.sample_width_bytes * self.channels_count
 
-    def seconds_to_sample_count(self, seconds: float) -> int:
-        return int(seconds * self.sample_rate)
+    def seconds_to_frame_count(self, seconds: float) -> int:
+        return int(seconds * self.frame_rate)
 
-    def sample_count_to_seconds(self, sample_count: int) -> float:
-        return sample_count / self.sample_rate
+    def seconds_to_byte_count(self, seconds: float) -> int:
+        return self.seconds_to_frame_count(seconds) * self.frame_size_bytes()
+
+    def frame_count_to_seconds(self, frame_count: int) -> float:
+        return frame_count / self.frame_rate
 
     @property
     def wav_params(self):
@@ -29,7 +40,7 @@ class PcmParams:
         return (
             self.channels_count,  # nchannels
             self.sample_width_bytes,  # sampwidth
-            self.sample_rate,  # framerate
+            self.frame_rate,  # framerate
             0,  # nframes - unknown
             "NONE",  # comptype
             "not compressed",  # compname

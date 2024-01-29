@@ -6,14 +6,14 @@ from multiprocessing import Process, Queue
 from typing import Callable, Generator
 
 import speech2text.config as cfg
-from speech2text.pcm_params import WHISPER_PRESET, PcmParams
+from speech2text.audio_data import WHISPER_PCM_PARAMS, PcmParams
 from speech2text.utils.tick import Ticker
 
 logger = logging.getLogger(__name__)
 
 
 class Listener:
-    def __init__(self, pcm_params: PcmParams = WHISPER_PRESET) -> None:
+    def __init__(self, pcm_params: PcmParams = WHISPER_PCM_PARAMS) -> None:
         self.pcm_params: PcmParams = pcm_params
         self._recorder_proc: Callable | None = None
         self._chunks_iterator: Generator | None = None

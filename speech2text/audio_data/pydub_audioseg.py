@@ -31,7 +31,7 @@ class PdData(AudioSegment, IAudioData):
         return PcmParams(
             channels_count=self.channels,
             sample_width_bytes=self.sample_width,
-            sample_rate=self.frame_rate,
+            frame_rate=self.frame_rate,
         )
 
     def adjust_pcm_params(
@@ -39,7 +39,7 @@ class PdData(AudioSegment, IAudioData):
     ) -> "PdData":
         new_audio = (
             self.set_channels(new_pcm_params.channels_count)
-            .set_frame_rate(new_pcm_params.sample_rate)
+            .set_frame_rate(new_pcm_params.frame_rate)
             .set_sample_width(new_pcm_params.sample_width_bytes)
         )
         return new_audio

@@ -21,9 +21,7 @@ class WavData(IAudioData):
 
     def save_as_wav_file(self, wav_file: str | bytes | PathLike) -> None:
         with wave.open(wav_file, "wb") as file:
-            file.setnchannels(self.pcm_params.channels_count)
-            file.setsampwidth(self.pcm_params.sample_width_bytes)
-            file.setframerate(self.pcm_params.sample_rate)
+            file.setparams(**self.pcm_params.wav_params)
             file.writeframes(self._data)
 
     def create_io_stream(self) -> BytesIO:
@@ -41,12 +39,7 @@ class WavData(IAudioData):
         return self._data
 
     def split_in_chunks(self, chunk_len_sec: float = 0.5):
-        chunk_len_bytes = int(
-            float(chunk_len_sec)
-            * self.pcm_params.sample_rate
-            * self.pcm_params.channels_count
-            * self.pcm_params.sample_width_bytes
-        )
+        chunk_len_bytes = self.pcm_params.seconds_to_byte_count(chunk_len_sec)
         data_len = len(self._data)
         if data_len == 0:
             return [bytearray()]

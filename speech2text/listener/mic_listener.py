@@ -3,7 +3,7 @@ from multiprocessing import Queue
 import pyaudio as pa
 
 import speech2text.config as cfg
-from speech2text.pcm_params import PcmParams
+from speech2text.audio_data import PcmParams
 
 from .listener import Listener
 
@@ -33,7 +33,7 @@ def _mic_recorder_proc(
     *,
     microphone_id: str,
 ) -> None:
-    chunk_size_frames = pcm_params.seconds_to_sample_count(chunk_size_sec)
+    chunk_size_frames = pcm_params.seconds_to_frame_count(chunk_size_sec)
     buffer_size_frames = chunk_size_frames * BUFFER_SIZE_MULTI
 
     with PyAudioWrapper() as audio:
@@ -41,7 +41,7 @@ def _mic_recorder_proc(
             input_device_index=microphone_id,
             format=SAMPLE_FORMATS[pcm_params.sample_width_bytes],
             channels=pcm_params.channels_count,
-            rate=pcm_params.sample_rate,
+            rate=pcm_params.frame_rate,
             input=True,
             frames_per_buffer=buffer_size_frames,
         )

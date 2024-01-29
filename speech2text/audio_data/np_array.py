@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from functools import lru_cache
 from io import BytesIO
 from os import PathLike
-from typing import Any
 
 import noisereduce  # can take quite some time
 import numpy as np
@@ -76,7 +75,7 @@ class NpData(IAudioData):
     def reduce_noise(self):
         new_data = noisereduce.reduce_noise(
             self._data,
-            self.pcm_params.sample_rate,
+            self.pcm_params.frame_rate,
             stationary=False,  # =False,
             y_noise=None,  # =None,
             prop_decrease=0.9,  # =1.0,

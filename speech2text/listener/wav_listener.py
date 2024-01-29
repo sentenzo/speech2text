@@ -4,9 +4,9 @@ from typing import Generator
 from pydub import AudioSegment
 
 import speech2text.config as cfg
+from speech2text.audio_data import PcmParams
 from speech2text.utils import Ticker
 
-from ..pcm_params import PcmParams
 from .listener import Listener
 
 MSEC_IN_SEC = 1000
@@ -19,12 +19,12 @@ def _wav_recorder_proc(
     *,
     path_to_wave_file: str,
 ) -> Generator:
-    chunk_size_frames = pcm_params.seconds_to_sample_count(chunk_size_sec)
+    chunk_size_frames = pcm_params.seconds_to_frame_count(chunk_size_sec)
 
     wav_file: AudioSegment = (
         AudioSegment.from_wav(path_to_wave_file)
         .set_channels(pcm_params.channels_count)
-        .set_frame_rate(pcm_params.sample_rate)
+        .set_frame_rate(pcm_params.frame_rate)
     )
     samples = wav_file.get_array_of_samples()
     position = 0
@@ -43,7 +43,7 @@ def _wav_recorder_proc(
                     added_silence_msec = int(MSEC_IN_SEC * added_silence_sec)
                     silence_samples = AudioSegment.silent(
                         added_silence_msec,
-                        pcm_params.sample_rate,
+                        pcm_params.frame_rate,
                     ).get_array_of_samples()
                     chunk.extend(silence_samples)
                 # see https://docs.python.org/3/library/array.html
@@ -53,7 +53,7 @@ def _wav_recorder_proc(
 
             silence_samples = AudioSegment.silent(
                 chunk_size_sec * MSEC_IN_SEC,
-                pcm_params.sample_rate,
+                pcm_params.frame_rate,
             ).get_array_of_samples()
 
             while True:
