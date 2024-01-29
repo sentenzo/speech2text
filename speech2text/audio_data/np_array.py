@@ -11,8 +11,8 @@ import torch  # can take quite some time
 import whisper  # can take quite some time
 
 from .audio_data import IAudioData, PcmParams
-from .pd import PdData
-from .wav import WavData
+from .pydub_audioseg import PdData
+from .wave_data import WavData
 
 NP_DTYPE = "f2" if torch.cuda.is_available() else "f4"
 DEFAULT_WHISPER_MODEL_NAME = (

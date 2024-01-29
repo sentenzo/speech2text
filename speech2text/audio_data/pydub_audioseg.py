@@ -3,8 +3,9 @@ from os import PathLike
 
 from pydub import AudioSegment, effects, silence
 
-from .audio_data import WHISPER_PCM_PARAMS, IAudioData, PcmParams
-from .wav import WavData
+from .audio_data import IAudioData, PcmParams
+from .pcm_params import WHISPER_PCM_PARAMS
+from .wave_data import WavData
 
 
 class PdData(AudioSegment, IAudioData):

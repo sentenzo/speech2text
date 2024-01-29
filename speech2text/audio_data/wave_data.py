@@ -3,7 +3,8 @@ from dataclasses import dataclass, field
 from io import BytesIO
 from os import PathLike
 
-from . import WHISPER_PCM_PARAMS, IAudioData, PcmParams
+from .audio_data import IAudioData
+from .pcm_params import WHISPER_PCM_PARAMS, PcmParams
 
 
 @dataclass

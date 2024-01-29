@@ -1,22 +1,13 @@
 import wave
 from io import BytesIO
 from os import PathLike
-from typing import NamedTuple, Tuple
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 from IPython.display import Audio, display
 
-PcmParams = NamedTuple(
-    "PcmParams",
-    [
-        ("channels_count", int),
-        ("sample_width_bytes", int),
-        ("sample_rate", float),
-    ],
-)
-
-WHISPER_PCM_PARAMS = PcmParams(1, 2, 16_000)
+from .pcm_params import PcmParams
 
 
 class IAudioData:
@@ -37,11 +28,7 @@ class IAudioData:
         if isinstance(wav_file, PathLike):
             wav_file = str(wav_file)
         with wave.open(wav_file, "rb") as file:
-            pcm_params = PcmParams(
-                file.getnchannels(),
-                file.getsampwidth(),
-                file.getframerate(),
-            )
+            pcm_params = PcmParams.from_wave_file(file)
             data = bytearray(file.readframes(file.getnframes()))
             return (pcm_params, data)
 
