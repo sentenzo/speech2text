@@ -1,4 +1,4 @@
-from .np_array import NpData, _pick_whisper_model
+from .np_array import NpData
 from .pcm_params import WHISPER_PCM_PARAMS, PcmParams
 from .pydub_audioseg import PdData
 from .wave_data import WavData
@@ -10,7 +10,6 @@ __all__ = [
     "WavData",
     "PdData",
     "NpData",
-    "_pick_whisper_model",
     "PcmParams",
     "WHISPER_PCM_PARAMS",
 ]
