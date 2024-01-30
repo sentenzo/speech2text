@@ -9,7 +9,11 @@ from .pcm_params import PcmParams
 
 
 class IAudioData:
+    """An interface to work with big PCM-encoded chunks of audio (from 0.1 to
+    200 sec)."""
+
     def create_io_stream(self) -> BytesIO:
+        """Creates an in-memory WAVE-file representation of the audio."""
         raise NotImplementedError
 
     @property
@@ -18,6 +22,7 @@ class IAudioData:
 
     @property
     def raw_data(self) -> bytes:
+        """Returns a PCM encoded WAVE representation, but only the frames."""
         raise NotImplementedError
 
     def _load_from_wav_file(
@@ -31,6 +36,7 @@ class IAudioData:
             return (pcm_params, data)
 
     def ipy_show_player(self):
+        """In Jupyter Notebook: shows an interactive audio player element."""
         from IPython.display import Audio, display
 
         in_memory_file = self.create_io_stream()
@@ -38,6 +44,7 @@ class IAudioData:
         display(player)
 
     def ipy_show_specgram(self, figsize=(14, 5), dpi=60):
+        """In Jupyter Notebook: draws a spectrogram of the audio."""
         import matplotlib.pyplot as plt
 
         dtype = f"<i{self.pcm_params.sample_width_bytes}"

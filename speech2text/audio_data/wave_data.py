@@ -2,6 +2,7 @@ import wave
 from dataclasses import dataclass, field
 from io import BytesIO
 from os import PathLike
+from typing import List
 
 from .audio_data import IAudioData
 from .pcm_params import WHISPER_PCM_PARAMS, PcmParams
@@ -9,6 +10,8 @@ from .pcm_params import WHISPER_PCM_PARAMS, PcmParams
 
 @dataclass
 class WavData(IAudioData):
+    """An `IAudioData` implementation for `wave` module driven WAVE data."""
+
     _pcm_params: PcmParams = WHISPER_PCM_PARAMS
     _data: bytearray = field(default_factory=bytearray)
 
@@ -38,7 +41,7 @@ class WavData(IAudioData):
     def raw_data(self) -> bytes:
         return self._data
 
-    def split_in_chunks(self, chunk_len_sec: float = 0.5):
+    def split_in_chunks(self, chunk_len_sec: float = 0.5) -> List[bytearray]:
         chunk_len_bytes = self.pcm_params.seconds_to_byte_count(chunk_len_sec)
         data_len = len(self._data)
         if data_len == 0:

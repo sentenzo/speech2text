@@ -3,7 +3,7 @@
 ## Terminology:
 
 - `channels_count` — the amount of speakers required to play the audio file,
-usually equals to 1 (mono) or 2 (sterio)
+usually equals to 1 (mono) or 2 (stereo)
 - sample — a sequence of bytes, which encodes a single amplitude value
 - frame — a sequence of bytes, which encodes samples for each channel
 at some point in time
@@ -23,7 +23,7 @@ from wave import Wave_read, Wave_write
 class PcmParams:
     channels_count: int  # nchannels
     sample_width_bytes: int  # sampwidth
-    frame_rate: int  # framerate
+    frame_rate: int  # frame rate
 
     def frame_size_bytes(self) -> int:
         """The size of one frame (all the channels) in bytes"""
@@ -59,7 +59,7 @@ class PcmParams:
         return (
             self.channels_count,  # nchannels
             self.sample_width_bytes,  # sampwidth
-            self.frame_rate,  # framerate
+            self.frame_rate,  # frame rate
             0,  # nframes - unknown
             "NONE",  # comptype
             "not compressed",  # compname

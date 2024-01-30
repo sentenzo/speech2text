@@ -15,6 +15,8 @@ NP_DTYPE = "f2" if is_cuda_available() else "f4"
 
 @dataclass
 class NpData(IAudioData):
+    """An `IAudioData` implementation for `np.float`-arrays (2 or 4 bytes)."""
+
     _pcm_params: PcmParams
     _data: np_typing.NDArray[np.float32]
 

@@ -59,6 +59,15 @@ class PdData(AudioSegment, IAudioData):
     def adjust_pcm_params(
         self, new_pcm_params: PcmParams = WHISPER_PCM_PARAMS
     ) -> "PdData":
+        """Convert to new PCI parameters (changing: the amount of channels  /
+        frame rate  / sample width). Creates a new object (the original object
+        stays intact.
+
+        Example:
+        ```
+        new = old.adjust_pcm_params(new_pci_params)
+        ```
+        """
         new_audio = (
             self.set_channels(new_pcm_params.channels_count)
             .set_frame_rate(new_pcm_params.frame_rate)
