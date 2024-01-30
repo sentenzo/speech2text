@@ -3,9 +3,7 @@ from io import BytesIO
 from os import PathLike
 from typing import Tuple
 
-import matplotlib.pyplot as plt
 import numpy as np
-from IPython.display import Audio, display
 
 from .pcm_params import PcmParams
 
@@ -32,12 +30,16 @@ class IAudioData:
             data = bytearray(file.readframes(file.getnframes()))
             return (pcm_params, data)
 
-    def show_player(self):
+    def ipy_show_player(self):
+        from IPython.display import Audio, display
+
         in_memory_file = self.create_io_stream()
         player = Audio(in_memory_file.read())
         display(player)
 
-    def show_specgram(self, figsize=(14, 5), dpi=60):
+    def ipy_show_specgram(self, figsize=(14, 5), dpi=60):
+        import matplotlib.pyplot as plt
+
         dtype = f"<i{self.pcm_params.sample_width_bytes}"
         data = np.frombuffer(self.raw_data, dtype=dtype)
         if self.pcm_params.channels_count > 1:

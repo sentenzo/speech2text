@@ -47,14 +47,3 @@ class WavData(IAudioData):
             self._data[pos : pos + chunk_len_bytes]
             for pos in range(0, data_len, chunk_len_bytes)
         ]
-
-
-if __name__ == "__main__":
-    IN_FILE_PATH = "../../../tests/audio_samples/en_chunk.wav"
-    wav_data = WavData.load_from_wav_file(IN_FILE_PATH)
-    empty = WavData(wav_data.pcm_params)
-
-    for chunk in wav_data.split_in_chunks():
-        empty.append_chunk(chunk)
-
-    assert wav_data.raw_data == empty.raw_data

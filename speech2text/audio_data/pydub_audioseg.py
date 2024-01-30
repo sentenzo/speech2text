@@ -1,3 +1,25 @@
+"""`PdData` class implements `IAudioData` interface over `pydub.AudioSegment`.
+
+Provides a convenient way to change audio-input's PCI parameters:
+```
+new_pd_data = old_pd_data.adjust_pcm_params(new_pci_params)
+```
+
+Allows to use `effects.normalize`, `effects.high_pass_filter`, 
+`effects.low_pass_filter`, `effects.speedup` and `effects.split_on_silence`
+directly (example: `pd_data.normalize()`).
+
+The class methods never change the object's inner state. The new object 
+instance will be returned instead.
+
+How to make an instance:
+- `AudioSegment` methods
+  - `PdData.from_wav`, `PdData.from_raw`, etc.
+  - `__init__`: `PdData(data)`
+- `IAudioData` methods
+  - `PdData.load_from_wav_file` -- takes: path | file descriptor | `WavData`
+"""
+
 from io import BytesIO
 from os import PathLike
 
@@ -79,22 +101,3 @@ class PdData(AudioSegment, IAudioData):
             seek_step,
         )
         return segments
-
-
-if __name__ == "__main__":
-    from pprint import pprint as pp
-
-    IN_FILE_PATH = "../../../tests/audio_samples/en_chunk.wav"
-
-    audio = PdData.load_from_wav_file(IN_FILE_PATH)
-    audio.show_player()
-    audio.show_specgram()
-    pp(audio.dBFS)
-
-    wav_data = WavData.load_from_wav_file(IN_FILE_PATH)
-    assert audio.raw_data == wav_data.raw_data
-
-    audio = audio.adjust_pcm_params()
-    audio.show_player()
-    audio.show_specgram()
-    pp(audio.dBFS)
