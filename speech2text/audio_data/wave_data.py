@@ -21,7 +21,7 @@ class WavData(IAudioData):
 
     def save_as_wav_file(self, wav_file: str | bytes | PathLike) -> None:
         with wave.open(wav_file, "wb") as file:
-            file.setparams(**self.pcm_params.wav_params)
+            file.setparams(self.pcm_params.wav_params)
             file.writeframes(self._data)
 
     def create_io_stream(self) -> BytesIO:
