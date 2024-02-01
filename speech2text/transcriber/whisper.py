@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from enum import Enum
 from functools import lru_cache
 from typing import Tuple
@@ -9,7 +9,7 @@ from torch.cuda import is_available as is_cuda_available
 from speech2text.audio_data import NpData
 
 
-class Model(Enum):
+class ModelName(Enum):
     TINY = "tiny"
     TINY_EN = "tiny.en"
     SMALL = "small"
@@ -17,14 +17,14 @@ class Model(Enum):
 
 
 DEFAULT_WHISPER_MODEL_NAME = (
-    Model.SMALL_EN if is_cuda_available() else Model.TINY_EN
+    ModelName.SMALL_EN if is_cuda_available() else ModelName.TINY_EN
 )
 
 
 @lru_cache(3)
-def _pick_whisper_model(model: str | Model = DEFAULT_WHISPER_MODEL_NAME):
+def _pick_whisper_model(model: ModelName | str = DEFAULT_WHISPER_MODEL_NAME):
     if isinstance(model, str):
-        model = Model(model)
+        model = ModelName(model)
     return whisper.load_model(model.value, in_memory=True)
 
 
@@ -45,15 +45,20 @@ class TranscriptionParameters:
     def as_dict(self):
         return asdict(self)
 
+    def replace(self, **changes):
+        return replace(self, **changes)
+
 
 DEFAULT_TRANSCRIPTION_PARAMETERS = TranscriptionParameters()
 
 
 def transcribe(
     np_data: NpData,
-    model_name: str = DEFAULT_WHISPER_MODEL_NAME,
+    model_name: ModelName | str = DEFAULT_WHISPER_MODEL_NAME,
     params: TranscriptionParameters = DEFAULT_TRANSCRIPTION_PARAMETERS,
 ) -> dict[str, str | list]:
+    if not isinstance(model_name, ModelName):
+        model_name = ModelName(model_name)
     return _pick_whisper_model(model_name).transcribe(
         np_data._data,
         **params.as_dict(),

@@ -21,6 +21,12 @@ class AIncrementStage(IStage):
 
 
 class IncrementStage(AIncrementStage):
-    def _apply(self, state: State, chunk: bytes | bytearray) -> State:
+    def _apply(
+        self,
+        state: State,
+        chunk: bytes | bytearray,
+        latency_ratio: float = 0.0,
+    ) -> State:
         state.ongoing.raw_data.append_chunk(chunk)
+        state.latency_ratio = latency_ratio
         state.status = Status.INCREMENTED

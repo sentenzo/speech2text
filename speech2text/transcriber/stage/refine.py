@@ -1,17 +1,17 @@
 """Refinement is the 4th stage of the Speech-to-Text workflow.
 
-Status: `SPLITTED -> REFINED`
+Status: `SPLITTED -> REFINED or SKIP`
 
 Operations:
-- if `ongoing_seg is None`: skip all
-- for all `to_be_finalized_segs`:
+- if `ongoing_seg is None`: skip until the finalization stage
+- for all `to_be_finalized` blocks:
     - (optionally) apply finalizing adjustments (AudioSegment transformations)
         - like `normalize` or volume-up or speeding-up
     - convert to `NpData`
     - (optionally) apply finalizing refinments
         - like `reduce_noise`
     - put into `to_be_finalized_arrs`
-- for `ongoing_seg`
+- for the `ongoing` block:
     - (optionaly) if having long duration, apply speeding-up
     - convert to `NpData`
     - (optionally) apply `reduce_noise`
