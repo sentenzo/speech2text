@@ -37,10 +37,9 @@ class ARefinementStage(IStage):
 
 class RefinementStage(ARefinementStage):
     def _apply(self, state: State) -> State:
-        if state.ongoing_seg:
-            for seg in state.to_be_finalized_segs:
-                state.to_be_finalized_arrs.append(self._adjust_final(seg))
-            state.ongoing_np = self._adjust(state.ongoing_seg)
+        for block in state.to_be_finalized:
+            block.arr_data = self._adjust_final(block.seg_data)
+        state.ongoing.arr_data = self._adjust(state.ongoing.seg_data)
         state.status = Status.ADJUSTED
 
     def _adjust(self, segment: PdData) -> NpData:

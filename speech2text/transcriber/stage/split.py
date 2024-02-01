@@ -23,7 +23,7 @@ from typing import List
 
 from speech2text.audio_data import PdData, WavData
 
-from ..state import State, Status
+from ..state import Block, State, Status
 from .stage import IStage
 
 
@@ -33,7 +33,7 @@ class ASplittingStage(IStage):
         state.validate()
 
     def _check_out_contract(self, state: State, *args, **kwargs):
-        assert state.status == Status.SPLITTED
+        assert state.status in (Status.SPLITTED, Status.SKIPPED)
         state.validate()
 
 
@@ -44,21 +44,32 @@ class SplittingStage(ASplittingStage):
     def _apply(self, state: State) -> State:
         agressive = (
             state.latency_ratio > 1.0
-            or state.ongoing_seg.duration_seconds > 10.0
+            or state.ongoing.seg_data.duration_seconds > 10.0
         )
         segments: List[PdData] = []
         if agressive:
-            segments = SplittingStage._split_agressive(state.ongoing_seg)
+            segments = SplittingStage._split_agressive(state.ongoing.seg_data)
         else:
-            segments = SplittingStage._split(state.ongoing_seg)
+            segments = SplittingStage._split(state.ongoing.seg_data)
+
         if len(segments) == 0:  # only silence was found
-            state.ongoing_seg = None
-            state.ongoing_raw = WavData()
+            state.status = Status.SKIPPED
         elif len(segments) == 1:  # no splitting, but maybe trimming
-            state.ongoing_seg = segments[0]
+            state.ongoing.seg_data = segments[0]
+            state.status = Status.SPLITTED
         elif len(segments) > 1:
-            *state.to_be_finalized_segs, state.ongoing_seg = segments
-        state.status = Status.SPLITTED
+            splitted_blocks = []
+            for segment in segments:
+                raw_data = WavData(
+                    state.input_pcm_params,
+                    segment.adjust_pcm_params(state.input_pcm_params),
+                )
+                block = Block(raw_data=raw_data, seg_data=segment)
+                splitted_blocks.append(block)
+
+            *state.to_be_finalized, state.ongoing = splitted_blocks
+            state.status = Status.SPLITTED
+        return state
 
     @staticmethod
     def _split(segment: PdData) -> List[PdData]:
