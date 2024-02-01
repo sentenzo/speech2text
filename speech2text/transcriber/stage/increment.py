@@ -30,3 +30,4 @@ class IncrementStage(AIncrementStage):
         state.ongoing.raw_data.append_chunk(chunk)
         state.latency_ratio = latency_ratio
         state.status = Status.INCREMENTED
+        return state

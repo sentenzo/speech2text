@@ -13,5 +13,6 @@ class IStage:
 
     def apply(self, state: State, *args, **kwargs) -> State:
         self._check_in_contract(state, *args, **kwargs)
-        self._apply(state, *args, **kwargs)
+        state = self._apply(state, *args, **kwargs)
         self._check_out_contract(state, *args, **kwargs)
+        return state

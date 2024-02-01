@@ -37,14 +37,14 @@ class TranscriptionStage(ATranscriptionStage):
             block.text = self._transcribe_final(block.arr_data)
             state.finalized.append(block)
 
-        init_prompt = None
         if state.finalized:
-            init_prompt = state.finalized[-1].text
+            state.ongoing_init_prompt = state.finalized[-1].text
         state.ongoing.text = self._transcribe(
             state.ongoing.arr_data,
-            init_prompt,
+            state.ongoing_init_prompt,
         )
         state.status = Status.TRANSCRIBED
+        return state
 
     def _transcribe(self, array: NpData, init_prompt=None) -> str:
         whisper_output = transcribe(

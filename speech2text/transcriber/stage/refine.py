@@ -41,6 +41,7 @@ class RefinementStage(ARefinementStage):
             block.arr_data = self._adjust_final(block.seg_data)
         state.ongoing.arr_data = self._adjust(state.ongoing.seg_data)
         state.status = Status.ADJUSTED
+        return state
 
     def _adjust(self, segment: PdData) -> NpData:
         return NpData.load_from_pd_data(segment)

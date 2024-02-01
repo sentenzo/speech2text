@@ -25,3 +25,4 @@ class FinalizationStage(AFinalizationStage):
         state.latency_ratio = 0.0
         state.to_be_finalized = []
         state.status = Status.FINALIZED
+        return state

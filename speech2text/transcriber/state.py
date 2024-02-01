@@ -64,6 +64,7 @@ class State:
     latency_ratio: float = 0.0
     status: Status = Status.FINALIZED
     ongoing: Block = Block(WavData())
+    ongoing_init_prompt: str | None = None
     to_be_finalized: List[Block] = []
     finalized: List[Block] = []
 

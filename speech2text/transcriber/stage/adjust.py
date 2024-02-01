@@ -35,3 +35,4 @@ class AdjustmentStage(AAdjustmentStage):
             .adjust_pcm_params()
         )
         state.status = Status.ADJUSTED
+        return state
