@@ -1,10 +1,10 @@
-from .stage import IStage
-from .increment import IncrementStage
 from .adjust import AdjustmentStage
-from .split import SplittingStage
-from .refine import RefinementStage
-from .transcribe import TranscriptionStage
 from .finalize import FinalizationStage
+from .increment import IncrementStage
+from .refine import RefinementStage
+from .split import SplittingStage
+from .stage import IStage
+from .transcribe import TranscriptionStage
 
 __all__ = [
     "IStage",
