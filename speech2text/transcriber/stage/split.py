@@ -62,7 +62,7 @@ class SplittingStage(ASplittingStage):
             for segment in segments:
                 raw_data = WavData(
                     state.input_pcm_params,
-                    segment.adjust_pcm_params(state.input_pcm_params),
+                    segment.adjust_pcm_params(state.input_pcm_params).raw_data,
                 )
                 block = Block(raw_data=raw_data, seg_data=segment)
                 splitted_blocks.append(block)

@@ -1,5 +1,7 @@
 import logging
 
+from speech2text.audio_data import pcm_params
+
 logger = logging.getLogger(__name__)
 
 logging.basicConfig(
@@ -7,7 +9,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s \t|\t%(message)s",
 )
 
-IN_FILE_PATH = "tests/audio_samples/en_hedgehog.wav"
+IN_FILE_PATH = "tests/audio_samples/en_chunk.wav"
 OUT_FILE_PATH = "tests/audio_samples/out.wav"
 
 
@@ -68,5 +70,18 @@ def test_mic_listener():
 
 
 if __name__ == "__main__":
-    mvp()
-    # pydub_split(IN_FILE_PATH, OUT_FILE_PATH)
+    from .audio_data import WHISPER_PCM_PARAMS
+    from .listener import MicrophonListener, WavFileListener
+    from .transcriber import Workflow
+
+    listener = WavFileListener(WHISPER_PCM_PARAMS, path_to_file=IN_FILE_PATH)
+    # listener = MicrophonListener(WHISPER_PCM_PARAMS)
+    wfq = Workflow(input_pcm_params=WHISPER_PCM_PARAMS)
+    try:
+        for chunk in listener.get_chunks_iterator(0.8):
+            wfq.process_chunk(chunk)
+            for line in wfq.get_finalized_text():
+                print("::", line)
+            print("|>", wfq.get_ongoing_text(), " " * 10)
+    except KeyboardInterrupt:
+        pass

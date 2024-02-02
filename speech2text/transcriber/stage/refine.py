@@ -40,13 +40,15 @@ class RefinementStage(ARefinementStage):
         for block in state.to_be_finalized:
             block.arr_data = self._adjust_final(block.seg_data)
         state.ongoing.arr_data = self._adjust(state.ongoing.seg_data)
-        state.status = Status.ADJUSTED
+        state.status = Status.REFINED
         return state
 
     def _adjust(self, segment: PdData) -> NpData:
         return NpData.load_from_pd_data(segment)
 
     def _adjust_final(self, segment: PdData) -> NpData:
-        data = NpData.load_from_pd_data(segment.normalize())
+        data = NpData.load_from_pd_data(
+            segment.low_pass_filter(300).high_pass_filter(3500).normalize()
+        )
         data = reduce_noise(data)
         return data

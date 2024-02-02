@@ -22,10 +22,12 @@ DEFAULT_WHISPER_MODEL_NAME = (
 
 
 @lru_cache(3)
-def _pick_whisper_model(model: ModelName | str = DEFAULT_WHISPER_MODEL_NAME):
-    if isinstance(model, str):
-        model = ModelName(model)
-    return whisper.load_model(model.value, in_memory=True)
+def _pick_whisper_model(
+    model_name: ModelName | str = DEFAULT_WHISPER_MODEL_NAME,
+):
+    if isinstance(model_name, str):
+        model_name = ModelName(model_name)
+    return whisper.load_model(model_name.value, in_memory=True)
 
 
 _pick_whisper_model()  # cold start overcoming
@@ -33,14 +35,14 @@ _pick_whisper_model()  # cold start overcoming
 
 @dataclass(frozen=True)
 class TranscriptionParameters:
-    verbose: bool = False
-    temperature: float | Tuple[float, ...] = (0, 0.2, 0.4, 0.6, 0.8, 1)
-    compression_ratio_threshold: float = 2.4
-    no_speech_threshold: float = 0.6
-    condition_on_previous_text: bool = True
-    initial_prompt: str | None = None
-    word_timestamps: bool = False
-    hallucination_silence_threshold: float | None = None
+    verbose: bool
+    temperature: float | Tuple[float, ...]
+    compression_ratio_threshold: float
+    no_speech_threshold: float
+    condition_on_previous_text: bool
+    initial_prompt: str | None
+    word_timestamps: bool
+    hallucination_silence_threshold: float | None
 
     def as_dict(self):
         return asdict(self)
@@ -49,7 +51,16 @@ class TranscriptionParameters:
         return replace(self, **changes)
 
 
-DEFAULT_TRANSCRIPTION_PARAMETERS = TranscriptionParameters()
+DEFAULT_TRANSCRIPTION_PARAMETERS = TranscriptionParameters(
+    verbose=False,
+    temperature=(0, 0.2, 0.4, 0.6, 0.8, 1),
+    compression_ratio_threshold=2.4,
+    no_speech_threshold=0.6,
+    condition_on_previous_text=True,
+    initial_prompt=None,
+    word_timestamps=False,
+    hallucination_silence_threshold=None,
+)
 
 
 def transcribe(

@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Tuple
+from typing import List
 
 from speech2text.audio_data import NpData, PcmParams, PdData, WavData
 
@@ -63,10 +63,10 @@ class State:
     input_pcm_params: PcmParams
     latency_ratio: float = 0.0
     status: Status = Status.FINALIZED
-    ongoing: Block = Block(WavData())
+    ongoing: Block = field(default_factory=lambda: Block(WavData()))
     ongoing_init_prompt: str | None = None
-    to_be_finalized: List[Block] = []
-    finalized: List[Block] = []
+    to_be_finalized: List[Block] = field(default_factory=list)
+    finalized: List[Block] = field(default_factory=list)
 
     def __post_init__(self):
         self.ongoing.raw_data._pcm_params = self.input_pcm_params

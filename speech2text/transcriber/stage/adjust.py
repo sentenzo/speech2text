@@ -30,8 +30,8 @@ class AdjustmentStage(AAdjustmentStage):
     def _apply(self, state: State) -> State:
         state.ongoing.seg_data = (
             PdData.load_from_wav_file(state.ongoing.raw_data)
-            .low_pass_filter(300)
-            .high_pass_filter(3500)
+            # .low_pass_filter(300)
+            # .high_pass_filter(3500)
             .adjust_pcm_params()
         )
         state.status = Status.ADJUSTED
