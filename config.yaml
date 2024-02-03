@@ -1,0 +1,69 @@
+listener:
+  chunk_size_sec: 0.8
+  queue_check_delay_sec: 0.05 # should be a lot smaller than chunk_size_sec
+transcriber:
+  stages:
+    increment:
+    adjust:
+      pydub:
+        low_pass_filter: # human voice: ≈[300, 3500]
+        high_pass_filter: # human voice: ≈[300, 3500]
+        volume_up:
+        normalize: False
+    split:
+      agressive_threshold:
+        latency_ratio: 1.0 # triggers if exceeds
+        duration_sec: 10.0 # triggers if exceeds
+      pudub_split_on_silence:
+        default:
+          min_silence_len: 1000
+          silence_thresh: -30
+          keep_silence: 800
+          seek_step: 10
+        agressive_default: # split is more likely
+          min_silence_len: 800
+          silence_thresh: -28
+          keep_silence: 600
+          seek_step: 8
+        very_agressive_default: # split is a lot more likely
+          min_silence_len: 800
+          silence_thresh: -26
+          keep_silence: 600
+          seek_step: 8
+
+    refine:
+      ongoing:
+        pydub:
+          low_pass_filter: 300
+          high_pass_filter: 3500
+          normalize: True
+        noisereduce:
+      final:
+        pydub:
+          low_pass_filter: 300
+          high_pass_filter: 3500
+          volume_up:
+          speed_up:
+          normalize: True
+        noisereduce:
+          stationary: False
+          prop_decrease: 0.95 # in [0.0, 1.0]
+          freq_mask_smooth_hz: 500
+          time_mask_smooth_ms: 50
+          chunk_size: 600000
+          padding: 30000
+          n_fft: 1024
+          clip_noise_stationary: True
+          use_tqdm: False
+    transcribe:
+      ongoing:
+        whisper:
+          model_name: tiny.en
+      final:
+        whisper:
+          model_name: small.en
+          temperature: [0, 0.2, 0.4, 0.6, 0.8, 1]
+          compression_ratio_threshold: 2.4
+          no_speech_threshold: 0.6
+          word_timestamps: False
+          hallucination_silence_threshold: # can be None or float (sec), works only when word_timestamps == True
