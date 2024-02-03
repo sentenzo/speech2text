@@ -62,7 +62,7 @@ class Block:
 class State:
     input_pcm_params: PcmParams
     latency_ratio: float = 0.0
-    status: Status = Status.FINALIZED
+    _status: Status = Status.FINALIZED
     ongoing: Block = field(default_factory=lambda: Block(WavData()))
     ongoing_init_prompt: str | None = None
     to_be_finalized: List[Block] = field(default_factory=list)
@@ -108,9 +108,23 @@ class State:
                 Status.TRANSCRIBED: self._validate_transcribed,
                 Status.SKIPPED: self._validate_skipped,
                 Status.INVALID: self._validate_invalid,
-            }[self.status]()
+            }[self._status]()
             return True
         except:
             if raise_exception:
                 raise InvalidWorkflowStateException
             return False
+
+    @property
+    def status(self) -> Status:
+        return self._status
+
+    @status.setter
+    def status(self, new_status: Status):
+        old_status = self._status
+        try:
+            self._status = new_status
+            self.validate()
+        except:
+            self._status = old_status
+            raise
