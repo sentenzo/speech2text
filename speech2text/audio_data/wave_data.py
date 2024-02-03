@@ -20,6 +20,8 @@ class WavData(IAudioData):
         return WavData(*WavData._load_from_wav_file(wav_file))
 
     def append_chunk(self, chunk: bytes | bytearray) -> None:
+        if isinstance(self._data, bytes):
+            self._data = bytearray(self._data)
         self._data.extend(chunk)
 
     def save_as_wav_file(self, wav_file: str | bytes | PathLike) -> None:
