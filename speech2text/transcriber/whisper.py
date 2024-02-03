@@ -52,7 +52,7 @@ class TranscriptionParameters:
 
 
 DEFAULT_TRANSCRIPTION_PARAMETERS = TranscriptionParameters(
-    verbose=False,
+    verbose=None,
     temperature=(0, 0.2, 0.4, 0.6, 0.8, 1),
     compression_ratio_threshold=2.4,
     no_speech_threshold=0.6,

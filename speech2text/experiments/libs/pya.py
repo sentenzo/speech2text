@@ -25,10 +25,10 @@ def rec(sec=3.0):
     data = bytearray()
     times = int(float(sec) * RATE / BUFFER_SIZE)
 
-    logger.log(15, "start recording")
+    logger.debug("start recording")
     for _ in range(times):
         data.extend(stream.read(BUFFER_SIZE))
-    logger.log(15, "stop recording")
+    logger.debug("stop recording")
 
     with wave.open(OUT_PATH, "wb") as out_file:
         out_file.setframerate(RATE)

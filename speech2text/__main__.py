@@ -5,7 +5,7 @@ from speech2text.audio_data import pcm_params
 logger = logging.getLogger(__name__)
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.WARNING,
     format="%(asctime)s - %(levelname)s - %(name)s \t|\t%(message)s",
 )
 
@@ -27,7 +27,6 @@ def mvp():
                 f"The 123-th value is: {chunk[123]}"
             )
             wfq.push_chunk(chunk)
-            # print("\r" + " " * 80 + "\r")
             for line in wfq.flush_finalized_text():
                 print(line)
             print("\r", wfq.get_transcription(), " " * 10, end="")
@@ -78,10 +77,12 @@ if __name__ == "__main__":
     # listener = MicrophonListener(WHISPER_PCM_PARAMS)
     wfq = Workflow(input_pcm_params=WHISPER_PCM_PARAMS)
     try:
+        print("\033[H\033[J", end="")
         for chunk in listener.get_chunks_iterator(0.8):
             wfq.process_chunk(chunk)
-            for line in wfq.get_finalized_text():
-                print("::", line)
-            print("|>", wfq.get_ongoing_text(), " " * 10)
+            print("\033[A\033[A")
+            for line in wfq.get_finalized_text(flush_blocks=True):
+                print("::", line, " " * 5)
+            print(">>", wfq.get_ongoing_text())
     except KeyboardInterrupt:
         pass

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def convert(in_path, out_path):
-    logger.log(15, "start converting")
+    logger.debug("start converting")
     samples, _ = librosa.load(
         in_path,
         sr=SAMPLE_RATE,
@@ -31,4 +31,4 @@ def convert(in_path, out_path):
         samples = np.int16(samples)
         out_file.writeframes(samples.tobytes())
 
-    logger.log(15, "stop converting")
+    logger.debug("stop converting")

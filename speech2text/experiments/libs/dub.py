@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def convert(in_path, out_path):
-    logger.log(15, "start converting")
+    logger.debug("start converting")
     wav_file: AudioSegment = AudioSegment.from_wav(in_path)
     wav_file = wav_file.set_channels(1)  # to mono
     wav_file = wav_file.set_frame_rate(SAMPLE_RATE)
@@ -30,7 +30,7 @@ def convert(in_path, out_path):
         out_path,
         format="wav",
     )
-    logger.log(15, "stop converting")
+    logger.debug("stop converting")
 
 
 def split(in_path, out_path):
