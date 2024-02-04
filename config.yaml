@@ -9,6 +9,7 @@ transcriber:
         low_pass_filter: # human voice: ≈[300, 3500]
         high_pass_filter: # human voice: ≈[300, 3500]
         volume_up:
+        speed_up:
         normalize: False
     split:
       agressive_threshold:
@@ -30,7 +31,6 @@ transcriber:
           silence_thresh: -26
           keep_silence: 600
           seek_step: 8
-
     refine:
       ongoing:
         pydub:
