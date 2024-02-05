@@ -19,7 +19,6 @@ python = ">=3.11"
 torch = { markers = "sys_platform == 'win32'", url = "https://download.pytorch.org/whl/cu118/torch-2.1.2%2Bcu118-cp311-cp311-win_amd64.whl" }
 openai-whisper = { git = "https://github.com/openai/whisper.git" }
 pyaudio = "^0.2.14"
-librosa = "^0.10.1"
 noisereduce = "^3.0.0"
 pydub = "^0.25.1"
 pyyaml = "^6.0.1"
