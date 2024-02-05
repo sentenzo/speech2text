@@ -55,7 +55,7 @@ def _mic_recorder_proc(
             stream.close()
 
 
-class MicrophonListener(Listener):
+class MicrophoneListener(Listener):
     def __init__(self, *args, microphone_id: int = None):
         super().__init__(*args)
         with PyAudioWrapper() as audio:

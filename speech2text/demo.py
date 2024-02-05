@@ -31,9 +31,9 @@ def demo_mic_listener(out_file_path):
     """
     import wave
 
-    from .listener import MicrophonListener
+    from .listener import MicrophoneListener
 
-    listener = MicrophonListener()
+    listener = MicrophoneListener()
     with wave.open(out_file_path, "wb") as wav_file:
         wav_file.setparams(listener.pcm_params.wav_params)
 
@@ -47,10 +47,10 @@ def demo_mic_listener(out_file_path):
 
 def demo_console_realtime(in_file_path=None):
     from .audio_data import WHISPER_PCM_PARAMS
-    from .listener import MicrophonListener, WavFileListener
+    from .listener import MicrophoneListener, WavFileListener
     from .transcriber import Workflow
 
-    listener = MicrophonListener(WHISPER_PCM_PARAMS)
+    listener = MicrophoneListener(WHISPER_PCM_PARAMS)
     if in_file_path:
         listener = WavFileListener(
             WHISPER_PCM_PARAMS, path_to_file=in_file_path
