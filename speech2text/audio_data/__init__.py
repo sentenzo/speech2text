@@ -30,7 +30,6 @@ How it works in general:
 5. Transcribed text
 """
 
-
 from .np_array import NpData
 from .pcm_params import WHISPER_PCM_PARAMS, PcmParams
 from .pydub_audioseg import PdData

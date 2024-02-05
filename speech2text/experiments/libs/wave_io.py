@@ -14,8 +14,7 @@ logger = logging.getLogger(__name__)
 class WaveTransformation:
     def __init__(
         self, transformation: Callable[[wave._wave_params, bytes], bytes]
-    ) -> None:
-        ...
+    ) -> None: ...
 
 
 class WaveStream:
