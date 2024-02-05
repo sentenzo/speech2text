@@ -120,6 +120,7 @@ class RealtimeProcessing(IStrategy):
     def _apply_split(
         self, state: State, split_params: PyDubSplitOnSilenceSettings
     ) -> State:
+        init_length = len(state.ongoing.seg_data)
         segments = state.ongoing.seg_data.split_on_silence(
             **split_params.model_dump()
         )
@@ -128,8 +129,23 @@ class RealtimeProcessing(IStrategy):
             state.ongoing.seg_data = None
             state.ongoing.raw_data = WavData(state.input_pcm_params)
         elif len(segments) == 1:  # no splitting, but maybe trimming
-            state.to_be_finalized = []
-            state.ongoing.seg_data = segments[0]
+            segment = segments[0]
+            trim_threshold = max(
+                split_params.min_silence_len - split_params.keep_silence // 2,
+                200,
+            )
+            if (
+                init_length - len(segment) > trim_threshold
+            ):  # it was definitely trimmed
+                state.to_be_finalized = [Block.load_from_seg_data(segment)]
+                empty_wav = WavData(
+                    state.input_pcm_params, b"\x00\x00\x00\x00"
+                )
+                empty_seg = PdData.load_from_wav_file(empty_wav)
+                state.ongoing = Block(empty_wav, empty_seg)
+            else:
+                state.to_be_finalized = []
+                state.ongoing.seg_data = segment
         elif len(segments) > 1:
             blocks = [
                 Block.load_from_seg_data(segment) for segment in segments
