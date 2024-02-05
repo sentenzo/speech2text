@@ -132,7 +132,7 @@ class RealtimeProcessing(IStrategy):
             segment = segments[0]
             trim_threshold = max(
                 split_params.min_silence_len - split_params.keep_silence // 2,
-                200,
+                500,
             )
             if (
                 init_length - len(segment) > trim_threshold
