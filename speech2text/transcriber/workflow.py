@@ -14,6 +14,7 @@ class Workflow:
         input_pcm_params: PcmParams = WHISPER_PCM_PARAMS,
     ) -> None:
         self.strategy = strategy
+        self.strategy.cold_start()
         self.state = State(input_pcm_params)
 
     def process_chunk(

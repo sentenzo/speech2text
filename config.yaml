@@ -15,7 +15,7 @@ transcriber:
       agressive_threshold:
         latency_ratio: 1.0 # triggers if exceeds
         duration_sec: 10.0 # triggers if exceeds
-      pudub_split_on_silence:
+      pydub_split_on_silence:
         default:
           min_silence_len: 1000
           silence_thresh: -30
@@ -62,7 +62,7 @@ transcriber:
       final:
         whisper:
           model_name: small.en
-          temperature: [0, 0.2, 0.4, 0.6, 0.8, 1]
+          temperature: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
           compression_ratio_threshold: 2.4
           no_speech_threshold: 0.6
           word_timestamps: False

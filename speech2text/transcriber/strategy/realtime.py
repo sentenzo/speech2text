@@ -1,7 +1,13 @@
 from pydub.generators import WhiteNoise
-from speech2text.audio_data import NpData, PdData
+
+from speech2text.audio_data import WHISPER_PCM_PARAMS, NpData, PdData
 from speech2text.audio_data.wave_data import WavData
-from speech2text.settings import PyDubSettings, WhisperSettings, app_settings
+from speech2text.settings import (
+    PyDubSettings,
+    PyDubSplitOnSilenceSettings,
+    WhisperSettings,
+    app_settings,
+)
 
 from ..noisereduce import reduce_noise
 from ..state import Block, State, Status
@@ -10,17 +16,27 @@ from .strategy import IStrategy
 
 
 class RealtimeProcessing(IStrategy):
-    def cold_start(self, state: State):
-        assert len(state.ongoing.raw_data.raw_data) == 0
-        duration_msec = 1000
-        noise_chunk = (
-            PdData(WhiteNoise().to_audio_segment(duration=duration_msec))
-            .adjust_pcm_params(state.input_pcm_params)
-            .raw_data
+    def cold_start(self):
+        temp_pcm_params = WHISPER_PCM_PARAMS
+        temp_state = State(temp_pcm_params)
+
+        def get_white_noise_block(duration_msec=1000):
+            noise_wav = WavData(temp_pcm_params)
+            noise_wav.append_chunk(
+                WhiteNoise().to_audio_segment(duration=duration_msec).raw_data
+            )
+            noise_seg = PdData.load_from_wav_file(noise_wav)
+            noise_arr = NpData.load_from_wav_file(noise_wav)
+            return Block(noise_wav, noise_seg, noise_arr)
+
+        self.process_chunk(
+            temp_state, get_white_noise_block().raw_data.raw_data
         )
 
-        self.process_chunk(state, noise_chunk)
-        state.ongoing = Block(WavData(state.input_pcm_params))
+        # In order to run finalization process:
+        temp_state.to_be_finalized = [get_white_noise_block()]
+        temp_state.ongoing = get_white_noise_block()
+        self._transcribe(temp_state)
 
     def process_chunk(
         self,
@@ -59,7 +75,6 @@ class RealtimeProcessing(IStrategy):
             state.status = Status.REFINED  #############################
             state = self._transcribe(state)
             state.status = Status.TRANSCRIBED  #########################
-        state.status = Status.FINALIZED  ###############################
 
         return state
 
@@ -102,8 +117,12 @@ class RealtimeProcessing(IStrategy):
             )
         return state
 
-    def _apply_split(self, state: State, split_params) -> State:
-        segments = state.ongoing.seg_data.split_on_silence(**split_params)
+    def _apply_split(
+        self, state: State, split_params: PyDubSplitOnSilenceSettings
+    ) -> State:
+        segments = state.ongoing.seg_data.split_on_silence(
+            **split_params.model_dump()
+        )
         if len(segments) == 0:  # only silence was found
             state.to_be_finalized = []
             state.ongoing.seg_data = None
@@ -156,7 +175,9 @@ class RealtimeProcessing(IStrategy):
             for block in state.to_be_finalized:
                 apply_pydub(block, settings_final.pydub)
         for block in state.to_be_finalized:
-            block.arr_data = NpData.load_from_pd_data(block.seg_data)
+            block.arr_data = NpData.load_from_pd_data(
+                block.seg_data.adjust_pcm_params(WHISPER_PCM_PARAMS)
+            )
         if settings_final.noisereduce:
             for block in state.to_be_finalized:
                 block.arr_data = reduce_noise(block.arr_data)
@@ -166,7 +187,7 @@ class RealtimeProcessing(IStrategy):
         if settings_ongoing.pydub:
             apply_pydub(state.ongoing, settings_ongoing.pydub)
         state.ongoing.arr_data = NpData.load_from_pd_data(
-            state.ongoing.seg_data
+            state.ongoing.seg_data.adjust_pcm_params(WHISPER_PCM_PARAMS)
         )
         if settings_ongoing.noisereduce:
             state.ongoing.arr_data = reduce_noise(state.ongoing.arr_data)
@@ -179,10 +200,9 @@ class RealtimeProcessing(IStrategy):
         def apply_whisper(
             block: Block, whisper_params: WhisperSettings, **kwargs
         ):
-            whisper_output = transcribe(
-                block.arr_data,
-                **whisper_params.model_dump().update(**kwargs),
-            )
+            whisper_params = whisper_params.model_dump()
+            whisper_params.update(**kwargs)
+            whisper_output = transcribe(block.arr_data, **whisper_params)
             block.text = whisper_output["text"]
 
         for block in state.to_be_finalized:
@@ -190,6 +210,7 @@ class RealtimeProcessing(IStrategy):
                 block, settings_final.whisper, condition_on_previous_text=True
             )
             state.finalized.append(block)
+        state.to_be_finalized = []
 
         settings_final = app_settings.transcriber.stages.transcribe.ongoing
         if len(state.finalized) > 0:
@@ -201,3 +222,5 @@ class RealtimeProcessing(IStrategy):
             condition_on_previous_text=False,
             initial_prompt=state.ongoing_init_prompt,
         )
+
+        return state

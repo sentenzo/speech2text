@@ -66,11 +66,13 @@ DEFAULT_TRANSCRIPTION_PARAMETERS = TranscriptionParameters(
 def transcribe(
     np_data: NpData,
     model_name: ModelName | str = DEFAULT_WHISPER_MODEL_NAME,
-    params: TranscriptionParameters = DEFAULT_TRANSCRIPTION_PARAMETERS,
+    # params: TranscriptionParameters = DEFAULT_TRANSCRIPTION_PARAMETERS,
+    **kwargs,
 ) -> dict[str, str | list]:
-    if not isinstance(model_name, ModelName):
-        model_name = ModelName(model_name)
+    # if not isinstance(model_name, ModelName):
+    #     model_name = ModelName(model_name)
     return _pick_whisper_model(model_name).transcribe(
         np_data._data,
-        **params.as_dict(),
+        **kwargs,
+        # **params.as_dict(),
     )

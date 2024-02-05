@@ -120,7 +120,7 @@ class SplitStageSettings(BaseModel):
         very_agressive_default: PyDubSplitOnSilenceSettings
 
     agressive_threshold: AgressiveThreshold
-    pudub_split_on_silence: SplitOnSilence
+    pydub_split_on_silence: SplitOnSilence
 
 
 class RefineStageSettings(BaseModel):
