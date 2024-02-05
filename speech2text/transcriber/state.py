@@ -57,6 +57,17 @@ class Block:
     def _has_text(self):
         return isinstance(self.text, str)
 
+    @staticmethod
+    def load_from_seg_data(
+        seg_data: PdData, input_pcm_params: PcmParams = None
+    ):
+        input_pcm_params = input_pcm_params or seg_data.pcm_params
+        raw_data = WavData(
+            input_pcm_params,
+            seg_data.adjust_pcm_params(input_pcm_params).raw_data,
+        )
+        return Block(raw_data=raw_data, seg_data=seg_data)
+
 
 @dataclass
 class State:
