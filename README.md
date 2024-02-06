@@ -50,7 +50,7 @@ Audio data is stored and transformed between three different formats:
 
 The workflow can be roughly described as follow:
 1. We attempt to split the audio stream into sentences based on the pauses in speech. Each such sentence is stored in a separated **block**.
-2. The last block constantly changes, because we iteratively append small chunks of sound (0.5-1.5 sec) while the uses speaks. It is referred to as **ongoing block**.
+2. The last block constantly changes, because we iteratively append small chunks of sound (0.5-1.5 sec) while the user speaks. It is referred to as **ongoing block**.
 3. All the previous blocks won't be changing. They are referred to as **finalized blocks**.
 4. We apply a **slow high quality transcription** to each of the finalized blocks — only once.
 5. We apply a **fast low quality transcription** to the ongoing block at each iteration.
