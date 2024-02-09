@@ -2,9 +2,14 @@
 
 Realtime offline (self-hosted) speech recognition tool based on [OpenAI Whisper model](https://github.com/openai/whisper).
 
+Turns this ([en_chunk.wav](tests/audio_samples/en_chunk.wav)):
+
+![spectrogram](./spectrogram.png)
+
+into this:
+
 ![preview](./speech2text.gif)
 
-obtained from ([this audio input](tests/audio_samples/en_chunk.wav))
 
 <h2> Table of contents </h2> 
 
